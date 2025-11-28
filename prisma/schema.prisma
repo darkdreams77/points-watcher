@@ -1,0 +1,30 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Group {
+  id        String   @id @default(cuid())
+  forumId   String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  members   Member[]
+}
+
+model Member {
+  id           String   @id @default(cuid())
+  forumId      String
+  username     String
+  profileUrl   String
+  groupId      String
+  group        Group    @relation(fields: [groupId], references: [id])
+  lastPoints   Int?
+  lastScanAt   DateTime?
+  lastChangeAt DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
