@@ -14,17 +14,17 @@ jobs:
         uses: actions/checkout@v4
 
       # 1) Installer pnpm (OFFICIEL)
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
         with:
-          version: 9
+          version: 10
+          run_install: false
 
-      # 2) Installer Node et activer le cache pnpm
-      - name: Setup Node
+      - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm
+          cache: 'pnpm'
 
       # 3) Installer les dépendances
       - name: Install dependencies
