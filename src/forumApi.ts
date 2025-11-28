@@ -146,7 +146,7 @@ export async function fetchGroupMembersFromForum(
 
     if (membersOnPage.length === 0) {
       console.warn(`⚠️ AUCUN membre détecté sur ${url} (status ${res.status})`);
-      console.warn('Extrait HTML:', res.data.slice(0, 500));
+      console.warn('Extrait HTML:', res.data.slice(0, 1500));
     }
 
     // === Si aucune entrée trouvée → page vide → on s'arrête ===
