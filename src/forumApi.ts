@@ -144,7 +144,7 @@ export async function fetchGroupMembersFromForum(
     });
 
     // === Si aucune entrée trouvée → page vide → on s'arrête ===
-    if (membersOnPage.length === 1) {
+    if (membersOnPage.length <= 1) {
       break;
     }
 
