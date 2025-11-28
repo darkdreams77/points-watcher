@@ -9,35 +9,31 @@ jobs:
   scrape:
     runs-on: ubuntu-latest
 
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      FORUM_BASE_URL: ${{ secrets.FORUM_BASE_URL }}
+      FORUM_SESSION_COOKIE: ${{ secrets.FORUM_SESSION_COOKIE }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 1) Installer pnpm (OFFICIEL)
-      - uses: pnpm/action-setup@v4
-        name: Install pnpm
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
         with:
-          version: 8
-          run_install: false
+          version: 9
 
-      - name: Install Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 24
-          cache: 'pnpm'
+          node-version: 20
+          cache: pnpm
 
-      # 3) Installer les dépendances
       - name: Install dependencies
         run: pnpm install
 
-      # 4) Générer Prisma
       - name: Generate Prisma Client
         run: pnpm exec prisma generate
 
-      # 5) Lancer le scraper
       - name: Run scraper
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          FORUM_BASE_URL: ${{ secrets.FORUM_BASE_URL }}
-          FORUM_SESSION_COOKIE: ${{ secrets.FORUM_SESSION_COOKIE }}
         run: pnpm exec ts-node src/index.ts
