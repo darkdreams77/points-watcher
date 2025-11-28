@@ -129,6 +129,7 @@ export async function fetchGroupMembersFromForum(
     $(SELECTOR_MEMBER_ROW).each((_, el) => {
       const link = $(el).find(SELECTOR_PROFILE_LINK);
       const href = link.attr("href") || "";
+      console.log('href', href);
       const username = link.text().trim();
 
       const match = href.match(/\/u(\d+)/);
