@@ -17,14 +17,16 @@ model Group {
 
 model Member {
   id           String   @id @default(cuid())
-  forumId      String
+  forumId      String   @unique
   username     String
   profileUrl   String
   groupId      String
   group        Group    @relation(fields: [groupId], references: [id])
+
   lastPoints   Int?
   lastScanAt   DateTime?
   lastChangeAt DateTime?
+
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
