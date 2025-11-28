@@ -40,10 +40,18 @@ export async function syncGroup(
     return;
   }
 
-  // Exclure La Doyenne (u1) au niveau forum
   forumMembers = forumMembers.filter((m) => m.forumId !== '1');
 
+  if (forumMembers.length === 0) {
+    console.error(
+      `❌ 0 membre trouvé pour le groupe "${group.name}" (forumId=${group.forumId}). On ABANDONNE le sync de ce groupe.`
+    );
+    // Très important : on ne touche pas seenForumIds
+    return;
+  }
+
   console.log(`→ ${forumMembers.length} membres trouvés sur le forum pour "${group.name}"`);
+
 
   // 2) Sync DB <-> Forum
   //    Logique : un forumId = un Member global, qui peut changer de groupId
@@ -154,16 +162,21 @@ export async function syncAllGroups(): Promise<void> {
 
   const seenForumIds = new Set<string>();
 
-  // 1) Sync de chaque groupe
   for (const g of groups) {
     await syncGroup(g.id, seenForumIds);
   }
 
-  // 2) Nettoyage global : supprimer les membres qui n'apparaissent plus dans aucun groupe suivi
+  // Si on n'a vu personne, c'est qu'il y a un problème global (cookie, auth, etc.)
+  if (seenForumIds.size === 0) {
+    console.error(
+      '❌ Aucun forumId vu pendant ce run. On SKIP le nettoyage pour éviter de supprimer toute la base. Vérifie le cookie / la connexion.'
+    );
+    return;
+  }
+
   const allMembers = await db.member.findMany();
 
   for (const m of allMembers) {
-    // La Doyenne doit être ignorée de toute façon
     if (m.forumId === '1') {
       await db.member.delete({ where: { id: m.id } }).catch(() => {});
       continue;
@@ -177,3 +190,4 @@ export async function syncAllGroups(): Promise<void> {
     }
   }
 }
+
