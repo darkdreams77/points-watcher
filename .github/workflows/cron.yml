@@ -1,8 +1,8 @@
-name: Daily Forum Points Scraper
+name: Daily ILH Sync
 
 on:
   schedule:
-    - cron: "0 3 * * *" # tous les jours à 03:00 UTC
+    - cron: "0 3 * * *"
   workflow_dispatch:
 
 jobs:
@@ -10,28 +10,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-      
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3 # docs https://pnpm.io/continuous-integration#github-actions
+          node-version: 20
+
+      - name: Install PNPM
+        uses: pnpm/action-setup@v4
         with:
-            version: 8
+          version: 9
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Generate Prisma client
-        run: npx prisma generate
+      - name: Generate Prisma Client
+        run: pnpm prisma generate
 
       - name: Run scraper
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           FORUM_BASE_URL: ${{ secrets.FORUM_BASE_URL }}
           FORUM_SESSION_COOKIE: ${{ secrets.FORUM_SESSION_COOKIE }}
-        run: npx ts-node src/index.ts
+        run: pnpm ts-node src/index.ts
