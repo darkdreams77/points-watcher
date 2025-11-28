@@ -129,7 +129,6 @@ export async function fetchGroupMembersFromForum(
     $(SELECTOR_MEMBER_ROW).each((_, el) => {
       const link = $(el).find(SELECTOR_PROFILE_LINK);
       const href = link.attr("href") || "";
-      console.log('href', href);
       const username = link.text().trim();
 
       const match = href.match(/\/u(\d+)/);
@@ -146,7 +145,7 @@ export async function fetchGroupMembersFromForum(
 
     if (membersOnPage.length === 0) {
       console.warn(`⚠️ AUCUN membre détecté sur ${url} (status ${res.status})`);
-      console.warn('Extrait HTML:', res.data.slice(0, 1500));
+      console.warn('Extrait HTML:', res.data.slice(0, 5500));
     }
 
     // === Si aucune entrée trouvée → page vide → on s'arrête ===
