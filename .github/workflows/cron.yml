@@ -28,7 +28,7 @@ jobs:
 
       # 3) Installer les dépendances
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
 
       # 4) Générer Prisma
       - name: Generate Prisma Client
