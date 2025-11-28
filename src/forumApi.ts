@@ -1,64 +1,80 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
+import axios, { AxiosInstance } from "axios";
 import { wrapper } from "axios-cookiejar-support";
-import * as cheerio from "cheerio";
 import { CookieJar } from "tough-cookie";
+import * as cheerio from "cheerio";
 
 const BASE_URL = process.env.FORUM_BASE_URL!;
-// const COOKIE = process.env.FORUM_SESSION_COOKIE!;
 const FORUM_USERNAME = process.env.FORUM_USERNAME!;
 const FORUM_PASSWORD = process.env.FORUM_PASSWORD!;
 
-// === CONFIG RATE LIMIT ===
-const MIN_INTERVAL_MS = 1500;   // 1.5s entre deux requêtes (à ajuster)
-const MAX_RETRIES = 5;
+if (!BASE_URL) throw new Error("FORUM_BASE_URL manquant");
 
-let lastRequestTime = 0;
+let client: AxiosInstance | null = null;
 
 function sleep(ms: number) {
   return new Promise((res) => setTimeout(res, ms));
 }
 
-if (!BASE_URL) throw new Error("FORUM_BASE_URL manquant");
-if (!FORUM_USERNAME || !FORUM_PASSWORD) {
-  console.warn("FORUM_USERNAME / FORUM_PASSWORD manquants : login auto impossible");
-}
+const MIN_INTERVAL_MS = 1500;
+let lastRequestTime = 0;
 
-let client: AxiosInstance | null = null;
-
+// 1) Création d’un client connecté
 async function createLoggedClient(): Promise<AxiosInstance> {
   if (client) return client;
 
   const jar = new CookieJar();
-  const rawClient = axios.create({
+
+  let rawClient = axios.create({
     baseURL: BASE_URL,
     withCredentials: true,
     jar,
     headers: {
       "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
-        "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, comme Gecko) Chrome/124.0.0.0 Safari/537.36",
     },
   });
 
-  const wrapped = wrapper(rawClient);
-  // 1) GET page de login (pour initialiser les cookies et éventuellement récupérer un token)
-  const loginPage = await wrapped.get("/login");
+  rawClient = wrapper(rawClient);
+
+  // 1) GET page de login
+  const loginPage = await rawClient.get("/login");
   const $ = cheerio.load(loginPage.data);
 
-  // Si phpBB/Forumactif utilise un token CSRF dans le formulaire, tu peux le récupérer ici.
-  // À ajuster si tu vois un <input type="hidden" name="token" ...> dans le formulaire.
-  const token = $('input[name="form_token"]').attr("value");
+  // On récupère le premier <form> de login
+  const form = $("form").first();
+  if (!form.length) {
+    throw new Error("Impossible de trouver le formulaire de login sur /login");
+  }
+
+  let action = form.attr("action") || "/login";
+  if (!action.startsWith("http")) {
+    // action relative
+    if (!action.startsWith("/")) {
+      action = "/" + action;
+    }
+  }
+
+  const params = new URLSearchParams();
+
+  // On prend TOUS les input[name], puis on écrase username/password
+  form.find("input[name]").each((_, el) => {
+    const name = $(el).attr("name");
+    if (!name) return;
+    let value = $(el).attr("value") ?? "";
+
+    if (name.toLowerCase().includes("username")) {
+      value = FORUM_USERNAME;
+    }
+    if (name.toLowerCase().includes("password")) {
+      value = FORUM_PASSWORD;
+    }
+
+    // certains champs de type "submit" n'ont pas forcément besoin d'être envoyés, mais ça ne gêne pas
+    params.set(name, value);
+  });
 
   // 2) POST login
-  const form = new URLSearchParams();
-  form.set("username", FORUM_USERNAME);
-  form.set("password", FORUM_PASSWORD);
-  form.set("login", "Connexion");   // texte du bouton, souvent "Connexion" sur Forumactif
-  form.set("redirect", "/");        // où retourner après login
-  form.set("autologin", "on");      // facultatif
-  if (token) form.set("form_token", token);
-
-  const loginRes = await wrapped.post("/login", form.toString(), {
+  const loginRes = await rawClient.post(action, params.toString(), {
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
     },
@@ -66,19 +82,29 @@ async function createLoggedClient(): Promise<AxiosInstance> {
     validateStatus: (s) => s === 302 || s === 200,
   });
 
-  // Optionnel : vérifier qu’on est bien connecté (par ex. en rechargeant /profile)
-  const profileRes = await wrapped.get("/profile?mode=editprofile");
-  if (profileRes.data.includes("Connexion") || profileRes.data.includes("Invité")) {
+  // Debug optionnel
+  if (loginRes.status !== 302 && loginRes.status !== 200) {
+    console.warn("⚠️ Login Forumactif : réponse inattendue", loginRes.status);
+  }
+
+  // 3) Vérification qu’on est bien connectés
+  const profileRes = await rawClient.get("/profile?mode=editprofile");
+
+  if (
+    profileRes.data.includes("Connexion") ||
+    profileRes.data.includes("S'enregistrer")
+  ) {
+    // ici tu peux logguer un extrait pour debug si besoin
     throw new Error("Login Forumactif échoué depuis la CI");
   }
 
-  client = wrapped;
+  client = rawClient;
   return client;
 }
 
-// Fonction générique : toutes les requêtes passent par là
-async function rateLimitedGet(url: string) {
-  const c = await createLoggedClient(); // s’assure qu’on est loggé
+// 2) Wrapper rate-limité pour toutes les requêtes
+export async function rateLimitedGet(url: string) {
+  const c = await createLoggedClient();
 
   const now = Date.now();
   const elapsed = now - lastRequestTime;
@@ -86,7 +112,10 @@ async function rateLimitedGet(url: string) {
     await sleep(MIN_INTERVAL_MS - elapsed);
   }
 
-  const res = await c.get<string>(url, { validateStatus: () => true });
+  const res = await c.get<string>(url, {
+    validateStatus: () => true,
+  });
+
   lastRequestTime = Date.now();
   return res;
 }
