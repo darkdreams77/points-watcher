@@ -190,6 +190,9 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
           }}
           hideFooterPagination
           hideFooter
+          showToolbar
+          autosizeOnMount
+          // checkboxSelection
         />
       </div>
     </Box>
