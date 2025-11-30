@@ -7,6 +7,7 @@ import { Box, Typography, Chip } from '@mui/material';
 
 interface Props {
   group: Group;
+  isMobile: boolean;
 }
 
 function formatDateWithHours(value: string | null) {
@@ -39,7 +40,7 @@ function getStatus(member: Member): 'actif' | 'enDanger' {
   return now - lastChange <= THREE_WEEKS_MS ? 'actif' : 'enDanger';
 }
 
-export const GroupPage: React.FC<Props> = ({ group }) => {
+export const GroupPage: React.FC<Props> = ({ group, isMobile }) => {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const accentColor = getGroupColor(group);
@@ -67,7 +68,7 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
       {
         field: 'username',
         headerName: 'Membre',
-        flex: 1.5,
+        ...(isMobile ? { width: 150 } : { flex: 1.5 }),
         sortable: true,
         renderCell: (params) => (
           <a
@@ -88,12 +89,12 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
         field: 'lastPoints',
         headerName: 'RPs',
         type: 'number',
-        flex: 0.7,
+        ...(isMobile ? { width: 100 } : { flex: 0.7 }),
       },
       {
         field: 'status',
         headerName: 'Statut',
-        flex: 0.8,
+        ...(isMobile ? { width: 120 } : { flex: 0.8 }),
         sortable: false,
         renderCell: (params) => {
           const status = params.value as 'actif' | 'enDanger';
@@ -119,12 +120,12 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
       {
         field: 'lastChangeAt',
         headerName: 'Dernière incrémentation',
-        flex: 1,
+        ...(isMobile ? { width: 120 } : { flex: 1 }),
       },
       {
         field: 'lastScanAt',
         headerName: 'Dernier scan',
-        flex: 1,
+        ...(isMobile ? { width: 160 } : { flex: 1 }),
       },
     ],
     [accentColor]
@@ -191,7 +192,6 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
           hideFooterPagination
           hideFooter
           showToolbar
-          autosizeOnMount
           // checkboxSelection
         />
       </div>

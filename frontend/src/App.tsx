@@ -108,7 +108,7 @@ const AppLayout: React.FC = () => {
             <Route index element={<Navigate to="/in-danger" replace />} />
             <Route
               path="/groups/:forumId"
-              element={<GroupPageWrapper groups={groups} />}
+              element={<GroupPageWrapper groups={groups} isMobile={isMobile} />}
             />
             <Route
               path="/in-danger"
@@ -122,11 +122,14 @@ const AppLayout: React.FC = () => {
   );
 };
 
-const GroupPageWrapper: React.FC<{ groups: Group[] }> = ({ groups }) => {
+const GroupPageWrapper: React.FC<{ groups: Group[]; isMobile: boolean }> = ({
+  groups,
+  isMobile,
+}) => {
   const { forumId } = useParams<{ forumId: string }>();
   const group = groups.find((g) => g.forumId === forumId);
   if (!group) return <div>Groupe introuvable.</div>;
-  return <GroupPage group={group} />;
+  return <GroupPage group={group} isMobile={isMobile} />;
 };
 
 const App: React.FC = () => <AppLayout />;
