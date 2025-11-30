@@ -2,7 +2,7 @@ name: Daily ILH Sync
 
 on:
   schedule:
-    - cron: "0 * * * *" # toutes les heures, à xx:00 en UTC
+    - cron: '0 * * * *' # toutes les heures, à xx:00 en UTC
   workflow_dispatch:
 
 jobs:
@@ -12,8 +12,6 @@ jobs:
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       FORUM_BASE_URL: ${{ secrets.FORUM_BASE_URL }}
-      FORUM_USERNAME: ${{ secrets.FORUM_USERNAME }}
-      FORUM_PASSWORD: ${{ secrets.FORUM_PASSWORD }}
 
     steps:
       - name: Checkout repository
