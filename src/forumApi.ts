@@ -1,15 +1,33 @@
+// src/forumApi.ts
 import axios, { AxiosInstance } from "axios";
-import { wrapper } from "axios-cookiejar-support";
-import { CookieJar } from "tough-cookie";
 import * as cheerio from "cheerio";
 
 const BASE_URL = process.env.FORUM_BASE_URL!;
-const FORUM_USERNAME = process.env.FORUM_USERNAME!;
-const FORUM_PASSWORD = process.env.FORUM_PASSWORD!;
+const COOKIE = process.env.FORUM_SESSION_COOKIE || ""; // pour le local si tu veux
 
 if (!BASE_URL) throw new Error("FORUM_BASE_URL manquant");
 
 let client: AxiosInstance | null = null;
+
+function getClient(): AxiosInstance {
+  if (client) return client;
+
+  const headers: Record<string, string> = {
+    "User-Agent":
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, comme Gecko) Chrome/124.0.0.0 Safari/537.36",
+  };
+
+  if (COOKIE) {
+    headers.Cookie = COOKIE;
+  }
+
+  client = axios.create({
+    baseURL: BASE_URL,
+    headers,
+  });
+
+  return client;
+}
 
 function sleep(ms: number) {
   return new Promise((res) => setTimeout(res, ms));
@@ -18,93 +36,8 @@ function sleep(ms: number) {
 const MIN_INTERVAL_MS = 1500;
 let lastRequestTime = 0;
 
-// 1) Création d’un client connecté
-async function createLoggedClient(): Promise<AxiosInstance> {
-  if (client) return client;
-
-  const jar = new CookieJar();
-
-  let rawClient = axios.create({
-    baseURL: BASE_URL,
-    withCredentials: true,
-    jar,
-    headers: {
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, comme Gecko) Chrome/124.0.0.0 Safari/537.36",
-    },
-  });
-
-  rawClient = wrapper(rawClient);
-
-  // 1) GET page de login
-  const loginPage = await rawClient.get("/login");
-  const $ = cheerio.load(loginPage.data);
-
-  // On récupère le premier <form> de login
-  const form = $("form").first();
-  if (!form.length) {
-    throw new Error("Impossible de trouver le formulaire de login sur /login");
-  }
-
-  let action = form.attr("action") || "/login";
-  if (!action.startsWith("http")) {
-    // action relative
-    if (!action.startsWith("/")) {
-      action = "/" + action;
-    }
-  }
-
-  const params = new URLSearchParams();
-
-  // On prend TOUS les input[name], puis on écrase username/password
-  form.find("input[name]").each((_, el) => {
-    const name = $(el).attr("name");
-    if (!name) return;
-    let value = $(el).attr("value") ?? "";
-
-    if (name.toLowerCase().includes("username")) {
-      value = FORUM_USERNAME;
-    }
-    if (name.toLowerCase().includes("password")) {
-      value = FORUM_PASSWORD;
-    }
-
-    // certains champs de type "submit" n'ont pas forcément besoin d'être envoyés, mais ça ne gêne pas
-    params.set(name, value);
-  });
-
-  // 2) POST login
-  const loginRes = await rawClient.post(action, params.toString(), {
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    maxRedirects: 0,
-    validateStatus: (s) => s === 302 || s === 200,
-  });
-
-  // Debug optionnel
-  if (loginRes.status !== 302 && loginRes.status !== 200) {
-    console.warn("⚠️ Login Forumactif : réponse inattendue", loginRes.status);
-  }
-
-  // 3) Vérification qu’on est bien connectés
-  const profileRes = await rawClient.get("/profile?mode=editprofile");
-
-  if (
-    profileRes.data.includes("Connexion") ||
-    profileRes.data.includes("S'enregistrer")
-  ) {
-    // ici tu peux logguer un extrait pour debug si besoin
-    throw new Error("Login Forumactif échoué depuis la CI");
-  }
-
-  client = rawClient;
-  return client;
-}
-
-// 2) Wrapper rate-limité pour toutes les requêtes
 export async function rateLimitedGet(url: string) {
-  const c = await createLoggedClient();
+  const c = getClient();
 
   const now = Date.now();
   const elapsed = now - lastRequestTime;
@@ -121,8 +54,8 @@ export async function rateLimitedGet(url: string) {
 }
 
 
-const SELECTOR_MEMBER_ROW = "table.table1 tr"; // EXEMPLE
-const SELECTOR_PROFILE_LINK = 'a[href*="/u"]';      // souvent ça marche tel quel
+const SELECTOR_MEMBER_ROW = "table.table1 tr";
+const SELECTOR_PROFILE_LINK = 'a[href*="/u"]';
 
 
 export interface ForumMemberInfo {
