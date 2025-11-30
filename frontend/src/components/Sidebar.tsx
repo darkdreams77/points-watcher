@@ -7,7 +7,7 @@ import {
   Toolbar,
 } from '@mui/material';
 import { getGroupColor } from '../helpers/groupColors';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import type { Group } from '../types';
 import WarningIcon from '@mui/icons-material/Warning';
 
@@ -33,10 +33,23 @@ export const Sidebar = ({
     if (isMobile) setIsMobileOpen(false);
   };
 
+  const location = useLocation();
+  const isActive = (path: string) => {
+    return location.pathname.includes(path);
+  };
+
   const drawerContent = (
     <Box sx={{ overflow: 'auto' }}>
       <List>
-        <ListItemButton onClick={() => handleNavClick(`../in-danger`)}>
+        <ListItemButton
+          onClick={() => handleNavClick(`../in-danger`)}
+          sx={{
+            backgroundColor: isActive('/in-danger') ? '#1f1f1f' : 'transparent',
+            '&:hover': {
+              backgroundColor: 'action.hover',
+            },
+          }}
+        >
           <WarningIcon sx={{ color: 'orange', mr: 1.5 }} />
           <ListItemText primary="Membres en danger" />
         </ListItemButton>
@@ -47,6 +60,14 @@ export const Sidebar = ({
             <ListItemButton
               key={g.id}
               onClick={() => handleNavClick(g.forumId)}
+              sx={{
+                backgroundColor: isActive(g.forumId)
+                  ? '#1f1f1f'
+                  : 'transparent',
+                '&:hover': {
+                  backgroundColor: 'action.hover',
+                },
+              }}
             >
               <Box
                 sx={{
@@ -108,44 +129,6 @@ export const Sidebar = ({
           {drawerContent}
         </Drawer>
       )}
-
-      {/* <Drawer
-      variant="permanent"
-      sx={{
-        width: drawerWidth,
-        flexShrink: 0,
-        [`& .MuiDrawer-paper`]: {
-          width: drawerWidth,
-          boxSizing: 'border-box',
-        },
-      }}
-    >
-      <Toolbar />
-      <Box sx={{ overflow: 'auto' }}>
-        <List>
-          {groups.map((g) => {
-            const color = getGroupColor(g);
-            return (
-              <ListItemButton
-                key={g.id}
-                onClick={() => navigate(`/groups/${g.forumId}`)}
-              >
-                <Box
-                  sx={{
-                    width: 12,
-                    height: 12,
-                    borderRadius: '50%',
-                    backgroundColor: color,
-                    mr: 1.5,
-                  }}
-                />
-                <ListItemText primary={g.name} secondary={`${g.forumId}`} />
-              </ListItemButton>
-            );
-          })}
-        </List>
-      </Box>
-    </Drawer> */}
     </>
   );
 };

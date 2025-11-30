@@ -5,7 +5,6 @@ export type ComputedStatus = 'actif' | 'enDanger' | 'absent';
 export function computeStatus(member: Member): ComputedStatus {
   if (member.manualStatus === 'absent') return 'absent';
 
-  // const LIMIT_DAYS = 21;
   if (!member.lastChangeAt) return 'enDanger';
 
   const THREE_WEEKS_MS = 21 * 24 * 60 * 60 * 1000;
