@@ -154,6 +154,7 @@ export async function syncGroup(
  * - supprime de la DB les membres qui n’apparaissent dans AUCUN groupe
  */
 export async function syncAllGroups(): Promise<void> {
+
   const groups = await db.group.findMany();
   if (!groups.length) {
     console.log('Aucun groupe en base, lance d’abord le seed.');
@@ -162,9 +163,18 @@ export async function syncAllGroups(): Promise<void> {
 
   const seenForumIds = new Set<string>();
 
-  for (const g of groups) {
-    await syncGroup(g.id, seenForumIds);
+  // Concurrence limitée côté groupes (ex: 3 groupes à la fois)
+  const concurrency = 3;
+  for (let i = 0; i < groups.length; i += concurrency) {
+    const slice = groups.slice(i, i + concurrency);
+    await Promise.all(
+      slice.map((g) => syncGroup(g.id, seenForumIds))
+    );
   }
+
+  // for (const g of groups) {
+  //   await syncGroup(g.id, seenForumIds);
+  // }
 
   // Si on n'a vu personne, c'est qu'il y a un problème global (cookie, auth, etc.)
   if (seenForumIds.size === 0) {

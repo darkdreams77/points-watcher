@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import type { Group, Member } from '../types';
 
-const API_BASE = 'http://localhost:4000';
+const API_BASE =
+  import.meta.env.VITE_API_BASE ?? 'https://points-watcher.onrender.com';
+
 
 function formatDateWithHours(value: string | null) {
   if (!value) return '-';

@@ -2,7 +2,7 @@ name: Daily ILH Sync
 
 on:
   schedule:
-    - cron: "0 3 * * *"
+    - cron: "0 * * * *" # toutes les heures, à xx:00 en UTC
   workflow_dispatch:
 
 jobs:
