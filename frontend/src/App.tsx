@@ -105,13 +105,14 @@ const AppLayout: React.FC = () => {
         >
           <Toolbar />
           <Routes>
-            <Route
-              path="/"
-              element={<Navigate to={`/groups/${groups[0].forumId}`} replace />}
-            />
+            <Route index element={<Navigate to="/in-danger" replace />} />
             <Route
               path="/groups/:forumId"
               element={<GroupPageWrapper groups={groups} />}
+            />
+            <Route
+              path="/in-danger"
+              element={<div>Page des membres en danger (à implémenter)</div>}
             />
             <Route path="*" element={<div>Page non trouvée.</div>} />
           </Routes>
