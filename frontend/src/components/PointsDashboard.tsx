@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { DataGrid, type GridRowsProp, type GridColDef } from '@mui/x-data-grid';
 import type { Group, Member } from '../types';
 
 const API_BASE =
@@ -54,6 +55,21 @@ export const PointsDashboard: React.FC = () => {
       .finally(() => setLoading(false));
   }, [selectedGroupId]);
 
+  const columns: GridColDef[] = [
+    { field: 'members', headerName: 'Membres', width: 200 },
+    { field: 'points', headerName: 'RPs', width: 100 },
+    { field: 'lastChangeAt', headerName: 'Dernière incrémentation', width: 200 },
+    { field: 'lastScanAt', headerName: 'Dernier scan', width: 200 },
+  ];
+
+  const rows: GridRowsProp = members.map((m) => ({
+    id: m.id,
+    members: m.username,
+    points: m.lastPoints ?? '-',
+    lastChangeAt: formatDate(m.lastChangeAt),
+    lastScanAt: formatDateWithHours(m.lastScanAt),
+  }));
+
   return (
     <div style={{ padding: '1.5rem', fontFamily: 'system-ui, sans-serif', margin: '0 auto', maxWidth: '800px' }}>
       <header style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1rem' }}>
@@ -75,69 +91,17 @@ export const PointsDashboard: React.FC = () => {
       {loading ? (
         <p>Chargement…</p>
       ) : (
-        <table
-          style={{
-            borderCollapse: 'collapse',
-            width: '100%',
-            fontSize: '0.9rem',
-          }}
-        >
-          <thead>
-            <tr>
-              <th style={{ borderBottom: '1px solid #ccc', padding: '0.5rem', textAlign: 'left' }}>
-                Membre
-              </th>
-              <th style={{ borderBottom: '1px solid #ccc', padding: '0.5rem', textAlign: 'right' }}>
-                RPs / points
-              </th>
-              <th style={{ borderBottom: '1px solid #ccc', padding: '0.5rem', textAlign: 'left' }}>
-                Dernière incrémentation
-              </th>
-              <th style={{ borderBottom: '1px solid #ccc', padding: '0.5rem', textAlign: 'left' }}>
-                Dernier scan
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {members.map((m, index) => (
-              <tr
-                key={m.id}
-                style={{
-                  backgroundColor: index % 2 === 0 ? 'rgba(255,255,255,0.1)' : 'transparent',
-                }}
-              >
-                <td style={{ borderBottom: '1px solid #eee', padding: '0.5rem' }}>
-                  <a href={m.profileUrl} target="_blank" rel="noreferrer">
-                    {m.username}
-                  </a>
-                </td>
-                <td
-                  style={{
-                    borderBottom: '1px solid #eee',
-                    padding: '0.5rem',
-                    textAlign: 'right',
-                  }}
-                >
-                  {m.lastPoints ?? '-'}
-                </td>
-                <td style={{ borderBottom: '1px solid #eee', padding: '0.5rem' }}>
-                  {formatDate(m.lastChangeAt)}
-                </td>
-                <td style={{ borderBottom: '1px solid #eee', padding: '0.5rem' }}>
-                  {formatDateWithHours(m.lastScanAt)}
-                </td>
-              </tr>
-            ))}
-
-            {members.length === 0 && !loading && (
-              <tr>
-                <td colSpan={4} style={{ padding: '0.8rem', textAlign: 'center', color: '#666' }}>
-                  Aucun membre à afficher.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+        <DataGrid 
+          columns={columns} 
+          rows={rows} 
+          hideFooterPagination 
+          disableRowSelectionOnClick 
+          initialState={{
+            sorting: {
+              sortModel: [{ field: 'members', sort: 'asc' }],
+            },
+          }} 
+        />
       )}
     </div>
   );
