@@ -5,17 +5,14 @@ export type ComputedStatus = 'actif' | 'enDanger' | 'absent';
 export function computeStatus(member: Member): ComputedStatus {
   if (member.manualStatus === 'absent') return 'absent';
 
-  const LIMIT_DAYS = 21;
+  // const LIMIT_DAYS = 21;
   if (!member.lastChangeAt) return 'enDanger';
 
-  const last = new Date(member.lastChangeAt);
-  const now = new Date();
+  const THREE_WEEKS_MS = 21 * 24 * 60 * 60 * 1000;
+  if (!member.lastChangeAt) return 'enDanger';
 
-  const lastMid = new Date(last.getFullYear(), last.getMonth(), last.getDate());
-  const nowMid = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const lastChange = new Date(member.lastChangeAt).getTime();
+  const now = Date.now();
 
-  const diffDays =
-    (nowMid.getTime() - lastMid.getTime()) / (1000 * 60 * 60 * 24);
-
-  return diffDays >= LIMIT_DAYS ? 'enDanger' : 'actif';
+  return now - lastChange <= THREE_WEEKS_MS ? 'actif' : 'enDanger';
 }
