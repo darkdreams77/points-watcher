@@ -53,12 +53,30 @@ app.get('/groups/:id/members', async (req, res) => {
         lastScanAt: m.lastScanAt,
         lastChangeAt: m.lastChangeAt,
         profileUrl: m.profileUrl,
+        manualStatus: m.manualStatus,
       }))
     );
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Internal server error' });
   }
+});
+
+app.patch('/members/:id/status', async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body; // "absent" ou null
+
+  if (status !== 'absent' && status !== null)
+    return res.status(400).json({ error: 'Status invalide' });
+
+  const member = await db.member.update({
+    where: { id },
+    data: {
+      manualStatus: status,
+    },
+  });
+
+  res.json(member);
 });
 
 app.listen(PORT, () => {

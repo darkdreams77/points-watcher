@@ -12,4 +12,5 @@ export interface Member {
   lastScanAt: string | null;
   lastChangeAt: string | null;
   profileUrl: string;
+  manualStatus: 'absent' | null;
 }
