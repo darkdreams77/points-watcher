@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { Sidebar } from './components/Sidebar';
+import { DangerPage } from './components/DangerPage';
 
 const AppLayout: React.FC = () => {
   const [groups, setGroups] = useState<Group[]>([]);
@@ -110,10 +111,7 @@ const AppLayout: React.FC = () => {
               path="/groups/:forumId"
               element={<GroupPageWrapper groups={groups} isMobile={isMobile} />}
             />
-            <Route
-              path="/in-danger"
-              element={<div>Page des membres en danger (à implémenter)</div>}
-            />
+            <Route path="/in-danger" element={<DangerPage groups={groups} />} />
             <Route path="*" element={<div>Page non trouvée.</div>} />
           </Routes>
         </Box>

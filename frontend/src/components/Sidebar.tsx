@@ -6,9 +6,10 @@ import {
   ListItemText,
   Toolbar,
 } from '@mui/material';
-import { getGroupColor } from '../groupColors';
+import { getGroupColor } from '../helpers/groupColors';
 import { useNavigate } from 'react-router-dom';
 import type { Group } from '../types';
+import WarningIcon from '@mui/icons-material/Warning';
 
 const drawerWidth = 350;
 
@@ -35,6 +36,11 @@ export const Sidebar = ({
   const drawerContent = (
     <Box sx={{ overflow: 'auto' }}>
       <List>
+        <ListItemButton onClick={() => handleNavClick(`../in-danger`)}>
+          <WarningIcon sx={{ color: 'orange', mr: 1.5 }} />
+          <ListItemText primary="Membres en danger" />
+        </ListItemButton>
+
         {groups.map((g) => {
           const color = getGroupColor(g);
           return (

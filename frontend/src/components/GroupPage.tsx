@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import type { Group, Member } from '../types';
 import { fetchGroupMembers, updateMemberStatus } from '../api';
-import { getGroupColor } from '../groupColors';
+import { getGroupColor } from '../helpers/groupColors';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import { Box, Typography, Chip } from '@mui/material';
+import { computeStatus } from '../helpers/status';
 
 interface Props {
   group: Group;
@@ -30,17 +31,17 @@ function formatDate(value: string | null) {
   });
 }
 
-function computeStatus(member: Member): 'actif' | 'enDanger' | 'absent' {
-  if (member.manualStatus === 'absent') return 'absent';
+// function computeStatus(member: Member): 'actif' | 'enDanger' | 'absent' {
+//   if (member.manualStatus === 'absent') return 'absent';
 
-  const THREE_WEEKS_MS = 21 * 24 * 60 * 60 * 1000;
-  if (!member.lastChangeAt) return 'enDanger';
+//   const THREE_WEEKS_MS = 21 * 24 * 60 * 60 * 1000;
+//   if (!member.lastChangeAt) return 'enDanger';
 
-  const lastChange = new Date(member.lastChangeAt).getTime();
-  const now = Date.now();
+//   const lastChange = new Date(member.lastChangeAt).getTime();
+//   const now = Date.now();
 
-  return now - lastChange <= THREE_WEEKS_MS ? 'actif' : 'enDanger';
-}
+//   return now - lastChange <= THREE_WEEKS_MS ? 'actif' : 'enDanger';
+// }
 
 export const GroupPage: React.FC<Props> = ({ group, isMobile }) => {
   const [members, setMembers] = useState<Member[]>([]);
