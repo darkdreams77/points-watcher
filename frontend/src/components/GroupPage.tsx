@@ -30,7 +30,7 @@ function formatDate(value: string | null) {
 }
 
 function getStatus(member: Member): 'actif' | 'enDanger' {
-  const THREE_WEEKS_MS = 20 * 24 * 60 * 60 * 1000;
+  const THREE_WEEKS_MS = 21 * 24 * 60 * 60 * 1000;
   if (!member.lastChangeAt) return 'enDanger';
 
   const lastChange = new Date(member.lastChangeAt).getTime();
