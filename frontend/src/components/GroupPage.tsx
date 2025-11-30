@@ -145,8 +145,16 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
 
   return (
     <Box>
-      <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>
+      <Box
+        sx={{
+          mb: 2,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2,
+          flexWrap: 'wrap',
+        }}
+      >
+        <Typography variant="h5" sx={{ fontWeight: 700, flex: '1 1 100%' }}>
           {group.name}
         </Typography>
         <Chip
@@ -181,6 +189,7 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
             },
           }}
           hideFooterPagination
+          hideFooter
         />
       </div>
     </Box>

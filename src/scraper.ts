@@ -50,8 +50,9 @@ export async function syncGroup(
     return;
   }
 
-  console.log(`→ ${forumMembers.length} membres trouvés sur le forum pour "${group.name}"`);
-
+  console.log(
+    `→ ${forumMembers.length} membres trouvés sur le forum pour "${group.name}"`
+  );
 
   // 2) Sync DB <-> Forum
   //    Logique : un forumId = un Member global, qui peut changer de groupId
@@ -73,7 +74,9 @@ export async function syncGroup(
           groupId: group.id,
         },
       });
-      console.log(`+ Nouveau membre: ${fm.username} (u${fm.forumId}) dans ${group.name}`);
+      console.log(
+        `+ Nouveau membre: ${fm.username} (u${fm.forumId}) dans ${group.name}`
+      );
     } else {
       const updates: {
         username?: string;
@@ -109,6 +112,13 @@ export async function syncGroup(
     where: { groupId: group.id },
   });
 
+  function getYesterdayMidnight(): Date {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
   const now = new Date();
 
   for (const member of membersInGroup) {
@@ -124,13 +134,17 @@ export async function syncGroup(
         data: {
           lastPoints: currentRps,
           lastScanAt: now,
-          lastChangeAt: hasChanged ? now : member.lastChangeAt,
+          lastChangeAt: hasChanged
+            ? getYesterdayMidnight()
+            : member.lastChangeAt,
         },
       });
 
       if (hasChanged) {
         console.log(
-          `★ Points changés pour ${member.username}: ${previous ?? 0} → ${currentRps}`
+          `★ Points changés pour ${member.username}: ${
+            previous ?? 0
+          } → ${currentRps}`
         );
       } else {
         console.log(
@@ -154,7 +168,6 @@ export async function syncGroup(
  * - supprime de la DB les membres qui n’apparaissent dans AUCUN groupe
  */
 export async function syncAllGroups(): Promise<void> {
-
   const groups = await db.group.findMany();
   if (!groups.length) {
     console.log('Aucun groupe en base, lance d’abord le seed.');
@@ -167,9 +180,7 @@ export async function syncAllGroups(): Promise<void> {
   const concurrency = 3;
   for (let i = 0; i < groups.length; i += concurrency) {
     const slice = groups.slice(i, i + concurrency);
-    await Promise.all(
-      slice.map((g) => syncGroup(g.id, seenForumIds))
-    );
+    await Promise.all(slice.map((g) => syncGroup(g.id, seenForumIds)));
   }
 
   // for (const g of groups) {
@@ -200,4 +211,3 @@ export async function syncAllGroups(): Promise<void> {
     }
   }
 }
-
