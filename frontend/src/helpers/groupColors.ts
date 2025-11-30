@@ -1,4 +1,4 @@
-import type { Group } from './types';
+import type { Group } from '../types';
 
 const GROUP_COLORS_BY_FORUM_ID: Record<string, string> = {
   '3-adams-house': '#886fa7',
