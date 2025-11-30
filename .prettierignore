@@ -1,0 +1,17 @@
+# Ignore all node_modules and build directories
+node_modules
+dist
+build
+
+# Ignore specific files
+*.log
+*.lock
+
+# Ignore configuration files
+*.config.js
+*.config.ts
+
+# Ignore any other files or directories as needed
+.DS_Store
+.env
+.vscode/

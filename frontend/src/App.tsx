@@ -1,9 +1,15 @@
+import React, { useEffect, useState } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
+import { Routes, Route, Navigate, useParams } from 'react-router-dom';
+import { fetchGroups } from './api';
+import type { Group } from './types';
+import { GroupPage } from './components/GroupPage';
+import { CssBaseline, Box, Toolbar, AppBar, Typography } from '@mui/material';
+import { Sidebar } from './components/Sidebar';
 
-import { PointsDashboard } from './components/PointsDashboard'
-
-function App() {
+const AppLayout: React.FC = () => {
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const darkTheme = createTheme({
     palette: {
@@ -26,13 +32,63 @@ function App() {
     },
   });
 
+  useEffect(() => {
+    fetchGroups()
+      .then((data) => setGroups(data))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading)
+    return <div style={{ padding: 16 }}>Chargement des groupes…</div>;
+  if (!groups.length)
+    return <div style={{ padding: 16 }}>Aucun groupe trouvé.</div>;
+
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
-      <PointsDashboard />
-    </ThemeProvider>
-   
-  )
-}
+      <Box sx={{ display: 'flex' }}>
+        <AppBar position="fixed" sx={{ zIndex: 1201 }}>
+          <Toolbar>
+            <Typography variant="h6" noWrap component="div">
+              ILH – Suivi des RPs
+            </Typography>
+          </Toolbar>
+        </AppBar>
 
-export default App
+        <Sidebar groups={groups} />
+
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            p: 3,
+          }}
+        >
+          <Toolbar />
+          <Routes>
+            <Route
+              path="/"
+              element={<Navigate to={`/groups/${groups[0].id}`} replace />}
+            />
+            <Route
+              path="/groups/:id"
+              element={<GroupPageWrapper groups={groups} />}
+            />
+            <Route path="*" element={<div>Page non trouvée.</div>} />
+          </Routes>
+        </Box>
+      </Box>
+    </ThemeProvider>
+  );
+};
+
+const GroupPageWrapper: React.FC<{ groups: Group[] }> = ({ groups }) => {
+  const { id } = useParams<{ id: string }>();
+  const group = groups.find((g) => g.id === id);
+  if (!group) return <div>Groupe introuvable.</div>;
+  return <GroupPage group={group} />;
+};
+
+const App: React.FC = () => <AppLayout />;
+
+export default App;
