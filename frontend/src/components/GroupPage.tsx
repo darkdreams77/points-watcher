@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import type { Group, Member } from '../types';
-import { API_BASE, fetchGroupMembers, updateMemberStatus } from '../api';
+import { fetchGroupMembers, updateMemberStatus } from '../api';
 import { getGroupColor } from '../groupColors';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import { Box, Typography, Chip } from '@mui/material';
