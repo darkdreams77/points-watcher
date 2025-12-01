@@ -6,6 +6,7 @@ import {
   fetchMemberRps,
   ForumMemberInfo,
 } from './forumApi';
+import { DateTime } from 'luxon';
 
 /**
  * Sync un groupe unique :
@@ -113,9 +114,11 @@ export async function syncGroup(
   });
 
   function getYesterdayMidnight(): Date {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    return d;
+    return DateTime.now()
+      .setZone('Europe/Paris')
+      .minus({ days: 1 })
+      .startOf('day')
+      .toJSDate();
   }
 
   const now = new Date();
