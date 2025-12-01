@@ -5,6 +5,7 @@ import { getGroupColor } from '../helpers/groupColors';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import { Box, Typography, Chip } from '@mui/material';
 import { computeStatus } from '../helpers/status';
+import { formatDateParis } from '../helpers/formatDate';
 
 interface Props {
   group: Group;
@@ -24,11 +25,7 @@ function formatDateWithHours(value: string | null) {
 
 function formatDate(value: string | null) {
   if (!value) return '-';
-  return new Date(value).toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
+  return formatDateParis(value);
 }
 
 // function computeStatus(member: Member): 'actif' | 'enDanger' | 'absent' {
