@@ -113,14 +113,6 @@ export async function syncGroup(
     where: { groupId: group.id },
   });
 
-  function getYesterdayMidnight(): Date {
-    return DateTime.now()
-      .setZone('Europe/Paris')
-      .minus({ days: 1 })
-      .startOf('day')
-      .toJSDate();
-  }
-
   const now = new Date();
 
   for (const member of membersInGroup) {
@@ -136,9 +128,7 @@ export async function syncGroup(
         data: {
           lastPoints: currentRps,
           lastScanAt: now,
-          lastChangeAt: hasChanged
-            ? getYesterdayMidnight()
-            : member.lastChangeAt,
+          lastChangeAt: hasChanged ? now : member.lastChangeAt,
         },
       });
 
