@@ -18,6 +18,7 @@
     "@mui/system": "^7.3.5",
     "@mui/x-data-grid": "^8.20.0",
     "@tailwindcss/vite": "^4.1.17",
+    "luxon": "^3.7.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.9.6",

@@ -28,18 +28,6 @@ function formatDate(value: string | null) {
   return formatDateParis(value);
 }
 
-// function computeStatus(member: Member): 'actif' | 'enDanger' | 'absent' {
-//   if (member.manualStatus === 'absent') return 'absent';
-
-//   const THREE_WEEKS_MS = 21 * 24 * 60 * 60 * 1000;
-//   if (!member.lastChangeAt) return 'enDanger';
-
-//   const lastChange = new Date(member.lastChangeAt).getTime();
-//   const now = Date.now();
-
-//   return now - lastChange <= THREE_WEEKS_MS ? 'actif' : 'enDanger';
-// }
-
 export const GroupPage: React.FC<Props> = ({ group, isMobile }) => {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
