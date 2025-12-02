@@ -26,8 +26,6 @@ function formatDate(value: string | null) {
   if (!value) return '-';
 
   const date = new Date(value);
-  date.setDate(date.getDate() - 1);
-  date.setHours(0, 0, 0, 0);
 
   return date.toLocaleDateString('fr-FR', {
     day: '2-digit',

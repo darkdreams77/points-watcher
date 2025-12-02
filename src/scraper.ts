@@ -124,6 +124,10 @@ export async function syncGroup(
       const previous = member.lastPoints;
       const hasChanged = previous === null || previous !== currentRps;
 
+      const date = new Date(now);
+      date.setDate(date.getDate() - 1);
+      date.setHours(0, 0, 0, 0);
+
       await db.member.update({
         where: { id: member.id },
         data: {
