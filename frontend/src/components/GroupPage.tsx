@@ -148,7 +148,7 @@ export const GroupPage: React.FC<Props> = ({ group, isMobile }) => {
                 padding: '8px 12px',
                 lineHeight: 1,
                 borderRadius: 4,
-                background: isAbsent ? '#999' : '#00000015',
+                background: isAbsent ? '#506845' : '#2c2b2b',
                 cursor: 'pointer',
                 border: 'none',
                 fontSize: '14px',
@@ -223,22 +223,44 @@ export const GroupPage: React.FC<Props> = ({ group, isMobile }) => {
         />
       </Box>
 
-      <div style={{ width: '100%' }}>
-        <DataGrid
-          rows={rows}
-          columns={columns}
-          loading={loading}
-          disableRowSelectionOnClick
-          initialState={{
-            sorting: {
-              sortModel: [{ field: 'username', sort: 'asc' }],
-            },
+      <Box
+        sx={{
+          width: '100%',
+          height: isMobile ? 'auto' : 'calc(100vh - 200px)',
+          overflow: 'hidden',
+        }}
+      >
+        <Box
+          sx={{
+            width: '100%',
+            height: '100%',
+            overflowX: 'auto',
+            overflowY: 'hidden',
           }}
-          hideFooterPagination
-          hideFooter
-          showToolbar
-        />
-      </div>
+        >
+          <Box
+            sx={{
+              minWidth: '100%',
+              height: '100%',
+            }}
+          >
+            <DataGrid
+              rows={rows}
+              columns={columns}
+              loading={loading}
+              disableRowSelectionOnClick
+              initialState={{
+                sorting: {
+                  sortModel: [{ field: 'username', sort: 'asc' }],
+                },
+              }}
+              hideFooterPagination
+              hideFooter
+              showToolbar
+            />
+          </Box>
+        </Box>
+      </Box>
     </Box>
   );
 };

@@ -34,7 +34,7 @@ export const AllMembersPage: React.FC<Props> = ({ groups, isMobile }) => {
       {
         field: 'username',
         headerName: 'Membre',
-        flex: 1.5,
+        ...(isMobile ? { width: 150 } : { flex: 1.5 }),
         sortable: true,
         sortComparator: (a, b) =>
           (a as string).localeCompare(b as string, 'fr', {
@@ -64,7 +64,7 @@ export const AllMembersPage: React.FC<Props> = ({ groups, isMobile }) => {
       {
         field: 'groupName',
         headerName: 'Groupe',
-        flex: 1,
+        ...(isMobile ? { width: 150 } : { flex: 1 }),
         sortable: true,
         renderCell: (params) => {
           const row = params.row as MemberWithGroup;
@@ -89,22 +89,22 @@ export const AllMembersPage: React.FC<Props> = ({ groups, isMobile }) => {
         field: 'lastPoints',
         headerName: 'RPs',
         type: 'number',
-        flex: 0.7,
+        ...(isMobile ? { width: 100 } : { flex: 0.7 }),
       },
       {
         field: 'status',
         headerName: 'Statut',
-        flex: 0.8,
+        ...(isMobile ? { width: 120 } : { flex: 0.8 }),
         sortable: false,
         renderCell: (params) => {
           const row = params.row as MemberWithGroup;
           const status = computeStatus(row);
           const config =
             status === 'actif'
-              ? { label: 'Actif', bg: '#4CAF50' }
+              ? { label: 'Actif·ve', bg: '#4CAF50' }
               : status === 'enDanger'
               ? { label: 'En danger', bg: '#F44336' }
-              : { label: 'Absent·e', bg: '#9E9E9E' };
+              : { label: 'Absent·e', bg: '#636363' };
 
           return (
             <span
@@ -121,6 +121,11 @@ export const AllMembersPage: React.FC<Props> = ({ groups, isMobile }) => {
             </span>
           );
         },
+      },
+      {
+        field: 'lastChangeAt',
+        headerName: 'Date du dernier RP',
+        ...(isMobile ? { width: 120 } : { flex: 1 }),
       },
       {
         field: 'actions',
@@ -143,7 +148,7 @@ export const AllMembersPage: React.FC<Props> = ({ groups, isMobile }) => {
                 padding: '8px 12px',
                 lineHeight: 1,
                 borderRadius: 4,
-                background: isAbsent ? '#999' : '#00000015',
+                background: isAbsent ? '#506845' : '#2c2b2b',
                 cursor: 'pointer',
                 border: 'none',
                 fontSize: '14px',
@@ -154,11 +159,6 @@ export const AllMembersPage: React.FC<Props> = ({ groups, isMobile }) => {
             </button>
           );
         },
-      },
-      {
-        field: 'lastChangeAt',
-        headerName: 'Date du dernier RP',
-        flex: 1,
       },
     ],
     [groups]
@@ -174,23 +174,61 @@ export const AllMembersPage: React.FC<Props> = ({ groups, isMobile }) => {
     };
   });
 
+  const stats = useMemo(() => {
+    let actifs = 0;
+    let absents = 0;
+    let enDanger = 0;
+
+    for (const m of members) {
+      const status = computeStatus(m);
+      if (status === 'actif') actifs++;
+      else if (status === 'absent') absents++;
+      else enDanger++;
+    }
+
+    return { actifs, absents, enDanger };
+  }, [members]);
+
   return (
     <Box>
-      <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>
+      <Box
+        sx={{
+          mb: 2,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2,
+          flexWrap: 'wrap',
+        }}
+      >
+        <Typography variant="h5" sx={{ fontWeight: 700, flex: '1 1 100%' }}>
           Tous les membres
         </Typography>
         <Chip
-          label={`${rows.length} membre${rows.length > 1 ? 's' : ''}`}
+          label={`${rows.length} membres`}
           size="small"
-          sx={{ backgroundColor: '#1976d2', color: '#fff' }}
+          sx={{ backgroundColor: '#343434', color: '#fff' }}
+        />
+        <Chip
+          label={`${stats.actifs} actif·ve·s`}
+          size="small"
+          sx={{ backgroundColor: '#4CAF50', color: '#fff' }}
+        />
+        <Chip
+          label={`${stats.absents} absent·e·s`}
+          size="small"
+          sx={{ backgroundColor: '#636363', color: '#fff' }}
+        />
+        <Chip
+          label={`${stats.enDanger} en danger`}
+          size="small"
+          sx={{ backgroundColor: '#F44336', color: '#fff' }}
         />
       </Box>
 
       <Box
         sx={{
           width: '100%',
-          height: 'calc(100vh - 125px)',
+          height: isMobile ? 'auto' : 'calc(100vh - 200px)',
           overflow: 'hidden',
         }}
       >
