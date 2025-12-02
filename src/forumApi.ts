@@ -1,11 +1,11 @@
 // src/forumApi.ts
-import axios, { AxiosInstance } from "axios";
-import * as cheerio from "cheerio";
+import axios, { AxiosInstance } from 'axios';
+import * as cheerio from 'cheerio';
 
 const BASE_URL = process.env.FORUM_BASE_URL!;
-const COOKIE = process.env.FORUM_SESSION_COOKIE || ""; // pour le local si tu veux
+const COOKIE = process.env.FORUM_SESSION_COOKIE || ''; // pour le local si tu veux
 
-if (!BASE_URL) throw new Error("FORUM_BASE_URL manquant");
+if (!BASE_URL) throw new Error('FORUM_BASE_URL manquant');
 
 let client: AxiosInstance | null = null;
 
@@ -13,8 +13,8 @@ function getClient(): AxiosInstance {
   if (client) return client;
 
   const headers: Record<string, string> = {
-    "User-Agent":
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, comme Gecko) Chrome/124.0.0.0 Safari/537.36",
+    'User-Agent':
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, comme Gecko) Chrome/124.0.0.0 Safari/537.36',
   };
 
   if (COOKIE) {
@@ -37,6 +37,21 @@ const MIN_INTERVAL_MS = 1500;
 let lastRequestTime = 0;
 
 export async function rateLimitedGet(url: string) {
+  // const c = getClient();
+
+  // const now = Date.now();
+  // const elapsed = now - lastRequestTime;
+  // if (elapsed < MIN_INTERVAL_MS) {
+  //   await sleep(MIN_INTERVAL_MS - elapsed);
+  // }
+
+  // const res = await c.get<string>(url, {
+  //   validateStatus: () => true,
+  // });
+
+  // lastRequestTime = Date.now();
+  // return res;
+
   const c = getClient();
 
   const now = Date.now();
@@ -45,22 +60,23 @@ export async function rateLimitedGet(url: string) {
     await sleep(MIN_INTERVAL_MS - elapsed);
   }
 
-  const res = await c.get<string>(url, {
-    validateStatus: () => true,
-  });
-
+  const res = await c.get<string>(url, { validateStatus: () => true });
   lastRequestTime = Date.now();
+
+  if (res.status >= 500) {
+    // 5xx = problème côté forum, on ABORT ce run pour cette page
+    throw new Error(`Remote 5xx (${res.status}) on ${url}`);
+  }
+
   return res;
 }
 
-
-const SELECTOR_MEMBER_ROW = "table.table1 tr";
+const SELECTOR_MEMBER_ROW = 'table.table1 tr';
 const SELECTOR_PROFILE_LINK = 'a[href*="/u"]';
 
-
 export interface ForumMemberInfo {
-  forumId: string;   // ex: "1234"
-  username: string;  // pseudo
+  forumId: string; // ex: "1234"
+  username: string; // pseudo
   profileUrl: string;
 }
 
@@ -82,18 +98,18 @@ export async function fetchGroupMembersFromForum(
 
     $(SELECTOR_MEMBER_ROW).each((_, el) => {
       const link = $(el).find(SELECTOR_PROFILE_LINK);
-      const href = link.attr("href") || "";
+      const href = link.attr('href') || '';
       const username = link.text().trim();
 
       const match = href.match(/\/u(\d+)/);
       const forumId = match?.[1];
 
-      if (!forumId || !username || !href.includes("/u")) return;
+      if (!forumId || !username || !href.includes('/u')) return;
 
       membersOnPage.push({
         forumId,
         username,
-        profileUrl: href.startsWith("https") ? href : BASE_URL + href,
+        profileUrl: href.startsWith('https') ? href : BASE_URL + href,
       });
     });
 
@@ -110,7 +126,6 @@ export async function fetchGroupMembersFromForum(
     // Ajouter sans doublons
     allMembers.push(...membersOnPage);
 
-
     // === Debug pagination ===
     console.log(`Page start=${start}: ${membersOnPage.length} membres`);
 
@@ -118,7 +133,7 @@ export async function fetchGroupMembersFromForum(
     start += pageSize;
   }
 
-  return allMembers.filter(m => m.forumId !== "1");
+  return allMembers.filter((m) => m.forumId !== '1');
 }
 
 export async function fetchMemberRps(profileUrl: string): Promise<number> {
@@ -126,7 +141,7 @@ export async function fetchMemberRps(profileUrl: string): Promise<number> {
   const $ = cheerio.load(res.data);
 
   // À ADAPTER au DOM réel :
-  const raw = $(".hidden_fields #field_id-13 field div").text().trim();  
+  const raw = $('.hidden_fields #field_id-13 field div').text().trim();
   const points = parseInt(raw, 10);
 
   if (Number.isNaN(points)) {

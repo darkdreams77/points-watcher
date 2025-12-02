@@ -7,6 +7,7 @@ import {
   ForumMemberInfo,
 } from './forumApi';
 import { DateTime } from 'luxon';
+import { backupMembers } from './backup';
 
 /**
  * Sync un groupe unique :
@@ -42,12 +43,12 @@ export async function syncGroup(
   }
 
   forumMembers = forumMembers.filter((m) => m.forumId !== '1');
+  const previousCount = await db.member.count({ where: { groupId } });
 
-  if (forumMembers.length === 0) {
+  if (forumMembers.length === 0 && previousCount > 0) {
     console.error(
-      `❌ 0 membre trouvé pour le groupe "${group.name}" (forumId=${group.forumId}). On ABANDONNE le sync de ce groupe.`
+      `⚠ 0 membre trouvé pour ${groupId} alors qu'il y en avait ${previousCount} en base. On suppose un problème de scraping et on SKIP ce groupe.`
     );
-    // Très important : on ne touche pas seenForumIds
     return;
   }
 
@@ -167,6 +168,7 @@ export async function syncAllGroups(): Promise<void> {
   }
 
   const seenForumIds = new Set<string>();
+  let hadServerError = false;
 
   // Concurrence limitée côté groupes (ex: 3 groupes à la fois)
   const concurrency = 3;
@@ -175,10 +177,6 @@ export async function syncAllGroups(): Promise<void> {
     await Promise.all(slice.map((g) => syncGroup(g.id, seenForumIds)));
   }
 
-  // for (const g of groups) {
-  //   await syncGroup(g.id, seenForumIds);
-  // }
-
   // Si on n'a vu personne, c'est qu'il y a un problème global (cookie, auth, etc.)
   if (seenForumIds.size === 0) {
     console.error(
@@ -186,6 +184,16 @@ export async function syncAllGroups(): Promise<void> {
     );
     return;
   }
+
+  if (hadServerError) {
+    console.error(
+      '❌ Des erreurs serveur sont survenues pendant le scan. On ANNULE le cleanup pour protéger la base.'
+    );
+    return;
+  }
+
+  // ⬇️ ICI : BACKUP avant suppression
+  await backupMembers();
 
   const allMembers = await db.member.findMany();
 

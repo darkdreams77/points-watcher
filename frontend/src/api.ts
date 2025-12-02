@@ -1,4 +1,4 @@
-import type { Group, Member } from './types';
+import type { Group, Member, MemberWithGroup } from './types';
 
 export const API_BASE =
   import.meta.env.VITE_API_BASE ?? 'http://localhost:4000';
@@ -25,5 +25,11 @@ export async function updateMemberStatus(
     body: JSON.stringify({ status }),
   });
   if (!res.ok) throw new Error('Erreur de mise à jour du statut');
+  return res.json();
+}
+
+export async function fetchAllMembers(): Promise<MemberWithGroup[]> {
+  const res = await fetch(`${API_BASE}/members`);
+  if (!res.ok) throw new Error('Erreur de récupération de tous les membres');
   return res.json();
 }

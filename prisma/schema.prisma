@@ -32,3 +32,15 @@ model Member {
 
   manualStatus String? // "absent" ou null
 }
+
+model MemberBackup {
+  id           String    @id @default(cuid())
+  forumId      String
+  username     String
+  lastPoints   Int?
+  lastScanAt   DateTime?
+  lastChangeAt DateTime?
+  manualStatus String?
+  groupId      String
+  backupAt     DateTime  @default(now())
+}

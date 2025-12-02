@@ -16,6 +16,7 @@ import {
 import MenuIcon from '@mui/icons-material/Menu';
 import { Sidebar } from './components/Sidebar';
 import { DangerPage } from './components/DangerPage';
+import { AllMembersPage } from './components/AllMembersPage';
 
 const AppLayout: React.FC = () => {
   const [groups, setGroups] = useState<Group[]>([]);
@@ -24,7 +25,7 @@ const AppLayout: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(isMobile);
 
   const darkTheme = createTheme({
     palette: {
@@ -69,19 +70,17 @@ const AppLayout: React.FC = () => {
             flexDirection: 'row',
             justifyContent: 'flex-start',
             gap: '5px',
-            paddingLeft: isMobile ? '15px' : '10px',
+            paddingLeft: '30px',
           }}
         >
-          {isMobile && (
-            <IconButton
-              color="inherit"
-              edge="start"
-              onClick={() => setIsMobileOpen((prev) => !prev)}
-              sx={{ mr: 2 }}
-            >
-              <MenuIcon />
-            </IconButton>
-          )}
+          <IconButton
+            color="inherit"
+            edge="start"
+            onClick={() => setIsDrawerOpen((prev) => !prev)}
+            sx={{ flex: '0 0 70px' }}
+          >
+            <MenuIcon />
+          </IconButton>
 
           <Toolbar>
             <Typography variant="h6" noWrap component="div">
@@ -93,8 +92,8 @@ const AppLayout: React.FC = () => {
         <Sidebar
           groups={groups}
           isMobile={isMobile}
-          isMobileOpen={isMobileOpen}
-          setIsMobileOpen={setIsMobileOpen}
+          isDrawerOpen={isDrawerOpen}
+          setIsDrawerOpen={setIsDrawerOpen}
         />
 
         <Box
@@ -106,10 +105,14 @@ const AppLayout: React.FC = () => {
         >
           <Toolbar />
           <Routes>
-            <Route index element={<Navigate to="/in-danger" replace />} />
+            <Route index element={<Navigate to="/all-members" replace />} />
             <Route
               path="/groups/:forumId"
               element={<GroupPageWrapper groups={groups} isMobile={isMobile} />}
+            />
+            <Route
+              path="/all-members"
+              element={<AllMembersPage groups={groups} isMobile={isMobile} />}
             />
             <Route path="/in-danger" element={<DangerPage groups={groups} />} />
             <Route path="*" element={<div>Page non trouvée.</div>} />

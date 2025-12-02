@@ -79,6 +79,30 @@ app.patch('/members/:id/status', async (req, res) => {
   res.json(member);
 });
 
+app.get('/members', async (_req, res) => {
+  const members = await db.member.findMany({
+    include: {
+      group: true,
+    },
+  });
+
+  const payload = members.map((m) => ({
+    id: m.id,
+    forumId: m.forumId,
+    username: m.username,
+    lastPoints: m.lastPoints,
+    lastScanAt: m.lastScanAt,
+    lastChangeAt: m.lastChangeAt,
+    manualStatus: m.manualStatus,
+    profileUrl: m.profileUrl,
+    groupId: m.groupId,
+    groupName: m.group.name,
+    groupForumId: m.group.forumId,
+  }));
+
+  res.json(payload);
+});
+
 app.listen(PORT, () => {
   console.log(`API ILH Points watcher listening on port ${PORT}`);
 });

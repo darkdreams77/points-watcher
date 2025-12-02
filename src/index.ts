@@ -1,22 +1,25 @@
-import { DateTime } from "luxon";
-import { syncAllGroups } from "./scraper";
+import { DateTime } from 'luxon';
+import { syncAllGroups } from './scraper';
 
 async function main() {
-  const now = DateTime.now().setZone("Europe/Paris");
+  const now = DateTime.now().setZone('Europe/Paris');
+  const env = process.env.ENV;
 
   // Vérification : minuit FR ?
-  if (now.hour !== 0) {
+  if (now.hour !== 0 && env !== 'local') {
     console.log(
       `⏭  Pas minuit en France (${now.toFormat(
-        "HH:mm"
+        'HH:mm'
       )}), scraping annulé. Prochain check dans 1h.`
     );
     return;
   }
 
-  console.log(`🕛 Il est minuit en France (${now.toISO()}), lancement du scraping...`);
+  console.log(
+    `🛠️ Scrap local OU 🕛 Il est minuit en France (${now.toISO()}), lancement du scraping...`
+  );
   await syncAllGroups();
-  console.log("✔ Scraping terminé !");
+  console.log('✔ Scraping terminé !');
 }
 
 main().catch((err) => {

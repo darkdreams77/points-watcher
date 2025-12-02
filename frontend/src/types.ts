@@ -13,4 +13,12 @@ export interface Member {
   lastChangeAt: string | null;
   profileUrl: string;
   manualStatus?: 'absent' | null;
+  groupId?: string;
+}
+
+// pour la page globale
+export interface MemberWithGroup extends Member {
+  groupId: string;
+  groupName: string;
+  groupForumId: string;
 }
