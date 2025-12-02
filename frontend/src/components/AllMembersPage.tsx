@@ -53,7 +53,7 @@ export const AllMembersPage: React.FC<Props> = ({ groups, isMobile }) => {
               style={{
                 textDecoration: 'none',
                 color,
-                fontWeight: 500,
+                fontWeight: 700,
               }}
             >
               {params.value}

@@ -8,6 +8,7 @@
     "test:cookies": "ts-node src/test-cookie.ts",
     "scrape": "ts-node src/index.ts",
     "scrape:local": "ts-node src/index.ts ENV=local",
+    "scrape:dry": "ts-node src/scrape-to-file.ts",
     "dev:server": "ts-node src/server.ts",
     "dev:frontend": "cd frontend && pnpm dev"
   },

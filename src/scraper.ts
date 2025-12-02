@@ -6,8 +6,8 @@ import {
   fetchMemberRps,
   ForumMemberInfo,
 } from './forumApi';
-import { DateTime } from 'luxon';
 import { backupMembers } from './backup';
+import { getUtcMidnightOfUtcDate } from './utils/formatDate';
 
 /**
  * Sync un groupe unique :
@@ -124,16 +124,14 @@ export async function syncGroup(
       const previous = member.lastPoints;
       const hasChanged = previous === null || previous !== currentRps;
 
-      const date = new Date(now);
-      date.setDate(date.getDate() - 1);
-      date.setHours(0, 0, 0, 0);
-
       await db.member.update({
         where: { id: member.id },
         data: {
           lastPoints: currentRps,
           lastScanAt: now,
-          lastChangeAt: hasChanged ? now : member.lastChangeAt,
+          lastChangeAt: hasChanged
+            ? getUtcMidnightOfUtcDate(now)
+            : member.lastChangeAt,
         },
       });
 

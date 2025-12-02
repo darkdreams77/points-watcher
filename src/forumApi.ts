@@ -9,7 +9,7 @@ if (!BASE_URL) throw new Error('FORUM_BASE_URL manquant');
 
 let client: AxiosInstance | null = null;
 
-function getClient(): AxiosInstance {
+export function getClient(): AxiosInstance {
   if (client) return client;
 
   const headers: Record<string, string> = {
