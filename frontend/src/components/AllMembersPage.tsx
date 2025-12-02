@@ -197,7 +197,7 @@ export const AllMembersPage: React.FC<Props> = ({ groups, isMobile }) => {
         <Box
           sx={{
             width: '100%',
-            height: '100%',
+            height: 'calc(100vh - 125px)',
             overflowX: 'auto',
             overflowY: 'hidden',
           }}
