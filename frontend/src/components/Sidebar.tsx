@@ -23,7 +23,6 @@ type SidebarProps = {
 
 export const Sidebar = ({
   groups,
-  isMobile,
   isDrawerOpen,
   setIsDrawerOpen,
 }: SidebarProps) => {
@@ -31,7 +30,7 @@ export const Sidebar = ({
 
   const handleNavClick = (id: string) => {
     navigate(`/groups/${id}`);
-    if (isMobile) setIsDrawerOpen(false);
+    setIsDrawerOpen(false);
   };
 
   const location = useLocation();

@@ -37,21 +37,6 @@ const MIN_INTERVAL_MS = 1500;
 let lastRequestTime = 0;
 
 export async function rateLimitedGet(url: string) {
-  // const c = getClient();
-
-  // const now = Date.now();
-  // const elapsed = now - lastRequestTime;
-  // if (elapsed < MIN_INTERVAL_MS) {
-  //   await sleep(MIN_INTERVAL_MS - elapsed);
-  // }
-
-  // const res = await c.get<string>(url, {
-  //   validateStatus: () => true,
-  // });
-
-  // lastRequestTime = Date.now();
-  // return res;
-
   const c = getClient();
 
   const now = Date.now();
