@@ -87,7 +87,7 @@ export const AllMembersPage: React.FC<Props> = ({ groups, isMobile }) => {
       },
       {
         field: 'lastPoints',
-        headerName: 'RPs / points',
+        headerName: 'RPs',
         type: 'number',
         flex: 0.7,
       },
@@ -157,7 +157,7 @@ export const AllMembersPage: React.FC<Props> = ({ groups, isMobile }) => {
       },
       {
         field: 'lastChangeAt',
-        headerName: 'Dernière incrémentation',
+        headerName: 'Date du dernier RP',
         flex: 1,
       },
     ],
