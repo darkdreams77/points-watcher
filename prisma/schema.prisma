@@ -34,13 +34,13 @@ model Member {
 }
 
 model MemberBackup {
-  id           String    @id @default(cuid())
-  forumId      String
+  id           String   @id @default(cuid())
   username     String
+  forumId      String
   lastPoints   Int?
   lastScanAt   DateTime?
   lastChangeAt DateTime?
   manualStatus String?
   groupId      String
-  backupAt     DateTime  @default(now())
+  backupAt     DateTime @default(now())
 }

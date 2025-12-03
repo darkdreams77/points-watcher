@@ -1,31 +1,28 @@
 import { db } from './db';
 
 export async function backupMembers() {
-  console.log('💾 Backup members...');
+  console.log('💾 Backup members via Prisma...');
 
-  // tu copies tous les membres actuels dans MemberBackup
-  await db.$executeRaw`
-    INSERT INTO "MemberBackup" (
-      "forumId",
-      "username",
-      "lastPoints",
-      "lastScanAt",
-      "lastChangeAt",
-      "manualStatus",
-      "groupId",
-      "backupAt"
-    )
-    SELECT
-      m."forumId",
-      m."username",
-      m."lastPoints",
-      m."lastScanAt",
-      m."lastChangeAt",
-      m."manualStatus",
-      m."groupId",
-      NOW()
-    FROM "Member" m
-  `;
+  const members = await db.member.findMany();
 
-  console.log('💾 Backup terminé.');
+  if (!members.length) {
+    console.log('💾 Aucun member en base, pas de backup.');
+    return;
+  }
+
+  await db.memberBackup.createMany({
+    data: members.map((m) => ({
+      // on NE met PAS "id" ici → Prisma utilise @default(cuid())
+      forumId: m.forumId,
+      username: m.username,
+      lastPoints: m.lastPoints,
+      lastScanAt: m.lastScanAt,
+      lastChangeAt: m.lastChangeAt,
+      manualStatus: m.manualStatus,
+      groupId: m.groupId,
+      // backupAt: laissé vide → DEFAULT now()
+    })),
+  });
+
+  console.log(`💾 Backup terminé : ${members.length} membres copiés.`);
 }

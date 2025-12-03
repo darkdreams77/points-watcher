@@ -5,12 +5,14 @@
     "build": "tsc",
     "prisma:migrate": "prisma migrate dev",
     "prisma:generate": "prisma generate",
-    "test:cookies": "ts-node src/test-cookie.ts",
+    "test:cookies": "ts-node src/tests/test-cookie.ts",
+    "test:backup": "ts-node src/tests/test-backup.ts",
     "scrape": "ts-node src/index.ts",
     "scrape:local": "ts-node src/index.ts ENV=local",
-    "scrape:dry": "ts-node src/scrape-to-file.ts",
+    "scrape:dry": "ts-node src/local/scrape-to-file.ts",
     "dev:server": "ts-node src/server.ts",
-    "dev:frontend": "cd frontend && pnpm dev"
+    "dev:frontend": "cd frontend && pnpm dev",
+    "backup:local": "ts-node src/local/manual-backup.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.0.1",
