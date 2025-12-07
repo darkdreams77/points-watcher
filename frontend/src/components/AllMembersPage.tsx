@@ -110,7 +110,7 @@ export const AllMembersPage: React.FC<Props> = ({ groups, isMobile }) => {
               ? { label: 'En danger', bg: '#F44336' }
               : status === 'absent'
               ? { label: 'Absent·e', bg: '#636363' }
-              : { label: 'À supprimer', bg: '#000000' };
+              : { label: 'Inactif·ve', bg: '#000000' };
 
           return (
             <span
