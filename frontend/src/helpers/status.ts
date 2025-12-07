@@ -6,9 +6,7 @@ export function computeStatus(member: Member): ComputedStatus {
   if (member.manualStatus === 'toDelete') return 'toDelete';
   if (member.manualStatus === 'absent') return 'absent';
 
-  if (!member.lastChangeAt) return 'enDanger';
-
-  const THREE_WEEKS_MS = 21 * 24 * 60 * 60 * 1000;
+  const THREE_WEEKS_MS = 22 * 24 * 60 * 60 * 1000;
   if (!member.lastChangeAt) return 'enDanger';
 
   const lastChange = new Date(member.lastChangeAt).getTime();
