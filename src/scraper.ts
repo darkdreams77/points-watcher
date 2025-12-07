@@ -124,15 +124,21 @@ export async function syncGroup(
       const previous = member.lastPoints;
       const hasChanged = previous === null || previous !== currentRps;
 
+      const data: any = {
+        lastPoints: currentRps,
+        lastScanAt: now,
+        lastChangeAt: hasChanged
+          ? getUtcMidnightOfUtcDate(now)
+          : member.lastChangeAt,
+      };
+
+      if (hasChanged && member.manualStatus === 'toDelete') {
+        data.manualStatus = null;
+      }
+
       await db.member.update({
         where: { id: member.id },
-        data: {
-          lastPoints: currentRps,
-          lastScanAt: now,
-          lastChangeAt: hasChanged
-            ? getUtcMidnightOfUtcDate(now)
-            : member.lastChangeAt,
-        },
+        data,
       });
 
       if (hasChanged) {

@@ -1,8 +1,9 @@
 import type { Member } from '../types';
 
-export type ComputedStatus = 'actif' | 'enDanger' | 'absent';
+export type ComputedStatus = 'actif' | 'enDanger' | 'toDelete' | 'absent';
 
 export function computeStatus(member: Member): ComputedStatus {
+  if (member.manualStatus === 'toDelete') return 'toDelete';
   if (member.manualStatus === 'absent') return 'absent';
 
   if (!member.lastChangeAt) return 'enDanger';

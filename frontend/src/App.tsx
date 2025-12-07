@@ -17,6 +17,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { Sidebar } from './components/Sidebar';
 import { DangerPage } from './components/DangerPage';
 import { AllMembersPage } from './components/AllMembersPage';
+import { ToDeletePage } from './components/ToDeletePage';
 
 const AppLayout: React.FC = () => {
   const [groups, setGroups] = useState<Group[]>([]);
@@ -113,6 +114,10 @@ const AppLayout: React.FC = () => {
             <Route
               path="/all-members"
               element={<AllMembersPage groups={groups} isMobile={isMobile} />}
+            />
+            <Route
+              path="/to-delete"
+              element={<ToDeletePage groups={groups} />}
             />
             <Route path="/in-danger" element={<DangerPage groups={groups} />} />
             <Route path="*" element={<div>Page non trouvée.</div>} />

@@ -11,6 +11,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import type { Group } from '../types';
 import WarningIcon from '@mui/icons-material/Warning';
 import GroupsIcon from '@mui/icons-material/Groups';
+import GroupRemoveIcon from '@mui/icons-material/GroupRemove';
 
 const drawerWidth = 350;
 
@@ -68,6 +69,23 @@ export const Sidebar = ({
         >
           <WarningIcon sx={{ color: 'orange', mr: 1.5 }} />
           <ListItemText primary="Membres en danger" />
+        </ListItemButton>
+
+        <ListItemButton
+          onClick={() => handleNavClick(`../to-delete`)}
+          sx={{
+            backgroundColor: isActive('/to-delete')
+              ? 'action.selected'
+              : 'transparent',
+            '&:hover': {
+              backgroundColor: isActive('/to-delete')
+                ? 'action.selected'
+                : 'action.hover',
+            },
+          }}
+        >
+          <GroupRemoveIcon sx={{ color: '#992e2e', mr: 1.5 }} />
+          <ListItemText primary="Membres à supprimer" />
         </ListItemButton>
 
         {groups.map((g) => {

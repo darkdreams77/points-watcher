@@ -64,9 +64,9 @@ app.get('/groups/:id/members', async (req, res) => {
 
 app.patch('/members/:id/status', async (req, res) => {
   const { id } = req.params;
-  const { status } = req.body; // "absent" ou null
+  const { status } = req.body as { status: 'absent' | 'toDelete' | null };
 
-  if (status !== 'absent' && status !== null)
+  if (status !== 'absent' && status !== 'toDelete' && status !== null)
     return res.status(400).json({ error: 'Status invalide' });
 
   const member = await db.member.update({

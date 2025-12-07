@@ -12,7 +12,7 @@ export interface Member {
   lastScanAt: string | null;
   lastChangeAt: string | null;
   profileUrl: string;
-  manualStatus?: 'absent' | null;
+  manualStatus?: 'absent' | 'toDelete' | null;
   groupId?: string;
 }
 

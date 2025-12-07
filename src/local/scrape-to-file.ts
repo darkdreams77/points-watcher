@@ -1,12 +1,12 @@
 // src/scrape-to-file.ts
 import 'dotenv/config';
 import { promises as fs } from 'fs';
-import { db } from './db';
+import { db } from '../db';
 // import { getYesterdayMidnightParisFromScan } from './time'; // ta fonction de date
-import { fetchGroupMembersFromForum } from './forumApi'; // adapte le chemin
-import { fetchMemberPointsFromProfile } from './profile-scraper';
+import { fetchGroupMembersFromForum } from '../forumApi'; // adapte le chemin
+import { fetchMemberPointsFromProfile } from '../profile-scraper';
 import type { Group, Member } from '@prisma/client';
-import { getUtcMidnightOfUtcDate } from './utils/formatDate';
+import { getUtcMidnightOfUtcDate } from '../utils/formatDate';
 
 async function main() {
   // 1) instant du scan (même logique que la prod)

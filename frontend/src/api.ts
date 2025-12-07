@@ -17,7 +17,7 @@ export async function fetchGroupMembers(groupId: string): Promise<Member[]> {
 
 export async function updateMemberStatus(
   memberId: string,
-  status: 'absent' | null
+  status: 'absent' | 'toDelete' | null
 ) {
   const res = await fetch(`${API_BASE}/members/${memberId}/status`, {
     method: 'PATCH',

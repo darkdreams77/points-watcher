@@ -7,6 +7,10 @@ import { getGroupColor } from '../helpers/groupColors';
 import { formatDateParis } from '../helpers/formatDate';
 import { computeStatus } from '../helpers/status';
 
+import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
+import PauseCircleOutlineIcon from '@mui/icons-material/PauseCircleOutline';
+import PlayCircleOutlinedIcon from '@mui/icons-material/PlayCircleOutlined';
+
 interface Props {
   groups: Group[];
   isMobile: boolean;
@@ -104,7 +108,9 @@ export const AllMembersPage: React.FC<Props> = ({ groups, isMobile }) => {
               ? { label: 'Actif·ve', bg: '#4CAF50' }
               : status === 'enDanger'
               ? { label: 'En danger', bg: '#F44336' }
-              : { label: 'Absent·e', bg: '#636363' };
+              : status === 'absent'
+              ? { label: 'Absent·e', bg: '#636363' }
+              : { label: 'À supprimer', bg: '#000000' };
 
           return (
             <span
@@ -129,34 +135,68 @@ export const AllMembersPage: React.FC<Props> = ({ groups, isMobile }) => {
       },
       {
         field: 'actions',
-        headerName: 'Déclarer absent·e',
+        headerName: 'Actions',
         sortable: false,
         ...(isMobile ? { width: 100 } : { flex: 0.8 }),
         renderCell: (params) => {
           const m = params.row as Member;
           const isAbsent = m.manualStatus === 'absent';
+          const isToDelete = m.manualStatus === 'toDelete';
 
-          const handleClick = async () => {
-            const newStatus = isAbsent ? null : 'absent';
-            await updateMemberStatus(m.id, newStatus);
-            await refreshMembers(); // <-- ici
+          const setStatus = async (status: 'absent' | 'toDelete' | null) => {
+            await updateMemberStatus(m.id, status);
+            await refreshMembers();
           };
 
           return (
-            <button
+            <div
               style={{
-                padding: '8px 12px',
+                display: 'flex',
+                gap: 4,
+                alignItems: 'center',
+                justifyContent: 'center',
                 lineHeight: 1,
-                borderRadius: 4,
-                background: isAbsent ? '#506845' : '#2c2b2b',
-                cursor: 'pointer',
-                border: 'none',
-                fontSize: '14px',
+                height: '100%',
               }}
-              onClick={handleClick}
             >
-              {isAbsent ? 'Réactiver' : 'Absent·e ?'}
-            </button>
+              <button
+                onClick={() => setStatus(isAbsent ? null : 'absent')}
+                style={{
+                  padding: '8px 12px',
+                  lineHeight: 1,
+                  borderRadius: 4,
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  background: isAbsent ? '#506845' : '#2c2b2b',
+                }}
+                title={isAbsent ? 'Réactiver' : 'Mettre en absent·e'}
+              >
+                {isAbsent ? (
+                  <PlayCircleOutlinedIcon />
+                ) : (
+                  <PauseCircleOutlineIcon />
+                )}
+              </button>
+              {!isToDelete && (
+                <button
+                  onClick={() => setStatus(isToDelete ? null : 'toDelete')}
+                  style={{
+                    padding: '8px 12px',
+                    lineHeight: 1,
+                    borderRadius: 4,
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    background: isToDelete ? '#362d2d' : '#00000015',
+                    color: isToDelete ? '#fff' : 'inherit',
+                  }}
+                  title="Membre à supprimer"
+                >
+                  <PersonRemoveIcon />
+                </button>
+              )}
+            </div>
           );
         },
       },
