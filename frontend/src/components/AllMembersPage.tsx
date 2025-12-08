@@ -10,15 +10,16 @@ import { computeStatus } from '../helpers/status';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import PauseCircleOutlineIcon from '@mui/icons-material/PauseCircleOutline';
 import PlayCircleOutlinedIcon from '@mui/icons-material/PlayCircleOutlined';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 interface Props {
   groups: Group[];
-  isMobile: boolean;
 }
 
-export const AllMembersPage: React.FC<Props> = ({ groups, isMobile }) => {
+export const AllMembersPage: React.FC<Props> = ({ groups }) => {
   const [members, setMembers] = useState<MemberWithGroup[]>([]);
   const [loading, setLoading] = useState(true);
+  const isMobile = useIsMobile();
 
   // 1) Fonction de refresh factorisée
   const refreshMembers = useCallback(() => {
@@ -47,7 +48,7 @@ export const AllMembersPage: React.FC<Props> = ({ groups, isMobile }) => {
         renderCell: (params) => {
           const row = params.row as MemberWithGroup;
           const group = groups.find((g) => g.id === row.groupId);
-          const color = group ? getGroupColor(group) : '#1976d2';
+          const color = group ? getGroupColor(group) : '#000000';
 
           return (
             <a

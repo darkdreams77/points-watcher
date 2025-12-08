@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ThemeProvider, createTheme, useTheme } from '@mui/material/styles';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { fetchGroups } from './api';
 import type { Group } from './types';
@@ -10,7 +10,6 @@ import {
   Toolbar,
   AppBar,
   Typography,
-  useMediaQuery,
   IconButton,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -18,13 +17,13 @@ import { Sidebar } from './components/Sidebar';
 import { DangerPage } from './components/DangerPage';
 import { AllMembersPage } from './components/AllMembersPage';
 import { ToDeletePage } from './components/ToDeletePage';
+import { useIsMobile } from './hooks/useIsMobile';
 
 const AppLayout: React.FC = () => {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useIsMobile();
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(isMobile);
 
@@ -109,11 +108,11 @@ const AppLayout: React.FC = () => {
             <Route index element={<Navigate to="/all-members" replace />} />
             <Route
               path="/groups/:forumId"
-              element={<GroupPageWrapper groups={groups} isMobile={isMobile} />}
+              element={<GroupPageWrapper groups={groups} />}
             />
             <Route
               path="/all-members"
-              element={<AllMembersPage groups={groups} isMobile={isMobile} />}
+              element={<AllMembersPage groups={groups} />}
             />
             <Route
               path="/to-delete"
@@ -128,14 +127,11 @@ const AppLayout: React.FC = () => {
   );
 };
 
-const GroupPageWrapper: React.FC<{ groups: Group[]; isMobile: boolean }> = ({
-  groups,
-  isMobile,
-}) => {
+const GroupPageWrapper: React.FC<{ groups: Group[] }> = ({ groups }) => {
   const { forumId } = useParams<{ forumId: string }>();
   const group = groups.find((g) => g.forumId === forumId);
   if (!group) return <div>Groupe introuvable.</div>;
-  return <GroupPage group={group} isMobile={isMobile} />;
+  return <GroupPage group={group} />;
 };
 
 const App: React.FC = () => <AppLayout />;

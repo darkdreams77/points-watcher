@@ -8,21 +8,11 @@ import { computeStatus } from '../helpers/status';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import PauseCircleOutlineIcon from '@mui/icons-material/PauseCircleOutline';
 import PlayCircleOutlinedIcon from '@mui/icons-material/PlayCircleOutlined';
+import { formatDateWithHours } from '../helpers/formatDate';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 interface Props {
   group: Group;
-  isMobile: boolean;
-}
-
-function formatDateWithHours(value: string | null) {
-  if (!value) return '-';
-  return new Date(value).toLocaleString('fr-FR', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
 }
 
 function formatDate(value: string | null) {
@@ -37,10 +27,11 @@ function formatDate(value: string | null) {
   });
 }
 
-export const GroupPage: React.FC<Props> = ({ group, isMobile }) => {
+export const GroupPage: React.FC<Props> = ({ group }) => {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const accentColor = getGroupColor(group);
+  const isMobile = useIsMobile();
 
   // 1) Fonction de refresh factorisée
   const refreshMembers = useCallback(() => {
