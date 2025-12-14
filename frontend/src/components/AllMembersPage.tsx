@@ -1,4 +1,10 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, {
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+  useRef,
+} from 'react';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import { Box, Typography, Chip } from '@mui/material';
 import type { MemberWithGroup, Group, Member } from '../types';
@@ -219,15 +225,17 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
     let actifs = 0;
     let absents = 0;
     let enDanger = 0;
+    let inactifs = 0;
 
     for (const m of members) {
       const status = computeStatus(m);
       if (status === 'actif') actifs++;
       else if (status === 'absent') absents++;
+      else if (status === 'toDelete') inactifs++;
       else enDanger++;
     }
 
-    return { actifs, absents, enDanger };
+    return { actifs, absents, enDanger, inactifs };
   }, [members]);
 
   return (
@@ -263,6 +271,11 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
           label={`${stats.enDanger} en danger`}
           size="small"
           sx={{ backgroundColor: '#F44336', color: '#fff' }}
+        />
+        <Chip
+          label={`${stats.inactifs} à supprimer`}
+          size="small"
+          sx={{ backgroundColor: '#000000', color: '#fff' }}
         />
       </Box>
 
