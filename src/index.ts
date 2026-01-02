@@ -5,20 +5,31 @@ async function main() {
   const now = DateTime.now().setZone('Europe/Paris');
   const env = process.env.ENV;
 
-  // Vérification : minuit FR ?
-  if (now.hour !== 0 && env !== 'local') {
+  const isMidnightFR = now.hour === 0;
+  const isSunday20hFR = now.weekday === 7 && now.hour === 20;
+  const isLocal = env === 'local';
+
+  if (!isLocal && !isMidnightFR && !isSunday20hFR) {
     console.log(
-      `⏭  Pas minuit en France (${now.toFormat(
-        'HH:mm'
-      )}), scraping annulé. Prochain check dans 1h.`
+      `⏭  Pas l'heure (FR). Actuel: ${now.toFormat(
+        'cccc HH:mm'
+      )} — scraping annulé.`
     );
     return;
   }
 
   console.log(
-    `🛠️ Scrap local OU 🕛 Il est minuit en France (${now.toISO()}), lancement du scraping...`
+    isLocal
+      ? '🛠️ ENV=local → scraping forcé'
+      : isSunday20hFR
+      ? '🕗 Dimanche 20h en France → scraping hebdomadaire'
+      : '🕛 Minuit en France → scraping quotidien'
   );
+
+  console.log(`📅 Heure FR: ${now.toISO()}`);
+
   await syncAllGroups();
+
   console.log('✔ Scraping terminé !');
 }
 
