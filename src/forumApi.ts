@@ -36,22 +36,35 @@ function sleep(ms: number) {
 const MIN_INTERVAL_MS = 1500;
 let lastRequestTime = 0;
 
+const MAX_RETRIES = 3;
+const RETRY_BASE_MS = 2000;
+
 export async function rateLimitedGet(url: string) {
   const c = getClient();
 
-  const now = Date.now();
-  const elapsed = now - lastRequestTime;
-  if (elapsed < MIN_INTERVAL_MS) {
-    await sleep(MIN_INTERVAL_MS - elapsed);
+  let lastError: Error | null = null;
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    const now = Date.now();
+    const elapsed = now - lastRequestTime;
+    if (elapsed < MIN_INTERVAL_MS) {
+      await sleep(MIN_INTERVAL_MS - elapsed);
+    }
+
+    const res = await c.get<string>(url, { validateStatus: () => true });
+    lastRequestTime = Date.now();
+
+    if (res.status < 500) return res;
+
+    lastError = new Error(`Remote ${res.status} on ${url}`);
+    console.warn(`⚠ Tentative ${attempt}/${MAX_RETRIES} échouée (${res.status}) — ${url}`);
+
+    if (attempt < MAX_RETRIES) {
+      await sleep(RETRY_BASE_MS * attempt);
+    }
   }
 
-  const res = await c.get<string>(url, { validateStatus: () => true });
-  lastRequestTime = Date.now();
-
-  if (res.status >= 500) {
-    // 5xx = problème côté forum, on ABORT ce run pour cette page
-    throw new Error(`Remote 5xx (${res.status}) on ${url}`);
-  }
+  throw lastError!;
 
   return res;
 }
