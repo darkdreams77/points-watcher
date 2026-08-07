@@ -18,6 +18,7 @@ import { DangerPage } from './components/DangerPage';
 import { AllMembersPage } from './components/AllMembersPage';
 import { ToDeletePage } from './components/ToDeletePage';
 import { useIsMobile } from './hooks/useIsMobile';
+import { AuthProvider } from './auth-context';
 
 const AppLayout: React.FC = () => {
   const [groups, setGroups] = useState<Group[]>([]);
@@ -134,6 +135,10 @@ const GroupPageWrapper: React.FC<{ groups: Group[] }> = ({ groups }) => {
   return <GroupPage group={group} />;
 };
 
-const App: React.FC = () => <AppLayout />;
+const App: React.FC = () => (
+  <AuthProvider>
+    <AppLayout />
+  </AuthProvider>
+);
 
 export default App;

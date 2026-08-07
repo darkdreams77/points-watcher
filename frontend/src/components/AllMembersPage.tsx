@@ -2,7 +2,8 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import { Box, Typography, Chip } from '@mui/material';
 import type { MemberWithGroup, Group, Member } from '../types';
-import { fetchAllMembers, updateMemberStatus } from '../api';
+import { fetchAllMembers, updateMemberStatus, UnauthorizedError } from '../api';
+import { useAuth } from '../auth-context';
 import { getGroupColor } from '../helpers/groupColors';
 import { formatDateParis } from '../helpers/formatDate';
 import { computeStatus } from '../helpers/status';
@@ -20,6 +21,7 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
   const [members, setMembers] = useState<MemberWithGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const isMobile = useIsMobile();
+  const { showAuthModal } = useAuth();
 
   // 1) Fonction de refresh factorisée
   const refreshMembers = useCallback(() => {
@@ -145,8 +147,12 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
           const isToDelete = m.manualStatus === 'toDelete';
 
           const setStatus = async (status: 'absent' | 'toDelete' | null) => {
-            await updateMemberStatus(m.id, status);
-            await refreshMembers();
+            try {
+              await updateMemberStatus(m.id, status);
+              await refreshMembers();
+            } catch (e) {
+              if (e instanceof UnauthorizedError) showAuthModal(() => setStatus(status));
+            }
           };
 
           return (

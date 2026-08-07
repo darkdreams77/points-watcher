@@ -3,7 +3,8 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Box, Chip, Typography } from '@mui/material';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import type { Group, Member } from '../types';
-import { fetchGroupMembers, updateMemberStatus } from '../api';
+import { fetchGroupMembers, updateMemberStatus, UnauthorizedError } from '../api';
+import { useAuth } from '../auth-context';
 import { getGroupColor } from '../helpers/groupColors';
 import { computeStatus } from '../helpers/status';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
@@ -24,6 +25,7 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
   const [members, setMembers] = useState<MemberWithGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const isMobile = useIsMobile();
+  const { showAuthModal } = useAuth();
 
   const refresh = useCallback(async () => {
     if (!groups.length) return;
@@ -183,8 +185,12 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
           const isToDelete = m.manualStatus === 'toDelete';
 
           const setStatus = async (status: 'absent' | 'toDelete' | null) => {
-            await updateMemberStatus(m.id, status);
-            await refresh();
+            try {
+              await updateMemberStatus(m.id, status);
+              await refresh();
+            } catch (e) {
+              if (e instanceof UnauthorizedError) showAuthModal(() => setStatus(status));
+            }
           };
 
           return (

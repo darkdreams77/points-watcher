@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import type { Group, Member } from '../types';
-import { fetchGroupMembers, updateMemberStatus } from '../api';
+import { fetchGroupMembers, updateMemberStatus, UnauthorizedError } from '../api';
+import { useAuth } from '../auth-context';
 import { getGroupColor } from '../helpers/groupColors';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import { Box, Typography, Chip } from '@mui/material';
@@ -32,6 +33,7 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
   const [loading, setLoading] = useState(true);
   const accentColor = getGroupColor(group);
   const isMobile = useIsMobile();
+  const { showAuthModal } = useAuth();
 
   // 1) Fonction de refresh factorisée
   const refreshMembers = useCallback(() => {
@@ -134,8 +136,12 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
           const isToDelete = m.manualStatus === 'toDelete';
 
           const setStatus = async (status: 'absent' | 'toDelete' | null) => {
-            await updateMemberStatus(m.id, status);
-            await refreshMembers();
+            try {
+              await updateMemberStatus(m.id, status);
+              await refreshMembers();
+            } catch (e) {
+              if (e instanceof UnauthorizedError) showAuthModal(() => setStatus(status));
+            }
           };
 
           return (

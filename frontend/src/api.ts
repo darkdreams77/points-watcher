@@ -3,6 +3,12 @@ import type { Group, Member, MemberWithGroup } from './types';
 export const API_BASE =
   import.meta.env.VITE_API_BASE ?? 'http://localhost:4000';
 
+export class UnauthorizedError extends Error {
+  constructor() {
+    super('Unauthorized');
+  }
+}
+
 export async function fetchGroups(): Promise<Group[]> {
   const res = await fetch(`${API_BASE}/groups`);
   if (!res.ok) throw new Error('Erreur de récupération des groupes');
@@ -22,8 +28,10 @@ export async function updateMemberStatus(
   const res = await fetch(`${API_BASE}/members/${memberId}/status`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify({ status }),
   });
+  if (res.status === 401) throw new UnauthorizedError();
   if (!res.ok) throw new Error('Erreur de mise à jour du statut');
   return res.json();
 }
