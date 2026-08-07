@@ -1,13 +1,55 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import { db } from './db';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    credentials: true,
+  })
+);
 app.use(express.json());
+app.use(cookieParser());
+
+function requireAuth(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  const token = req.cookies?.auth_token;
+  if (!process.env.AUTH_SECRET || token !== process.env.AUTH_SECRET) {
+    return res.status(401).json({ error: 'Non autorisé' });
+  }
+  next();
+}
+
+app.post('/auth', (req, res) => {
+  if (!process.env.AUTH_PASSWORD || !process.env.AUTH_SECRET) {
+    return res.status(500).json({ error: 'Configuration serveur manquante' });
+  }
+
+  const { password } = req.body as { password?: string };
+
+  if (password !== process.env.AUTH_PASSWORD) {
+    return res.status(401).json({ error: 'Mot de passe incorrect' });
+  }
+
+  // SameSite=None requires Secure — frontend and backend are on different
+  // domains (Vercel / Northflank), so the cookie must always be Secure.
+  res.cookie('auth_token', process.env.AUTH_SECRET, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'none',
+    maxAge: 1000 * 60 * 60 * 24 * 30,
+    path: '/',
+  });
+  res.json({ ok: true });
+});
 
 // Liste des groupes
 app.get('/groups', async (_req, res) => {
@@ -62,8 +104,8 @@ app.get('/groups/:id/members', async (req, res) => {
   }
 });
 
-app.patch('/members/:id/status', async (req, res) => {
-  const { id } = req.params;
+app.patch('/members/:id/status', requireAuth, async (req, res) => {
+  const id = req.params.id as string;
   const { status } = req.body as { status: 'absent' | 'toDelete' | null };
 
   if (status !== 'absent' && status !== 'toDelete' && status !== null)
