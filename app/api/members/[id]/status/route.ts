@@ -3,9 +3,9 @@ import { db } from '../../../../../src/db';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await params;
   const { status }: { status: 'absent' | 'toDelete' | null } = await request.json();
 
   if (status !== 'absent' && status !== 'toDelete' && status !== null)
