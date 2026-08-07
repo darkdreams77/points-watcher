@@ -65,8 +65,6 @@ export async function rateLimitedGet(url: string) {
   }
 
   throw lastError!;
-
-  return res;
 }
 
 const SELECTOR_MEMBER_ROW = 'table.table1 tr';
