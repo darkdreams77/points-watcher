@@ -4,7 +4,7 @@ A full-stack application for monitoring forum group members and tracking their a
 
 ## Features
 
-- **Automated Scraping**: Hourly GitHub Actions cron job that runs at midnight (Paris time) to sync member data
+- **Automated Scraping**: Hourly Northflank cron Job that syncs member data once a day (midnight Paris time) or once a week (Sunday 20h), with catch-up retry and Discord alerting on failure
 - **Multi-Group Support**: Track members across multiple forum groups
 - **Activity Tracking**: Monitor member points (RPs) and detect changes
 - **Group Transfer Detection**: Automatically detect when members move between groups
@@ -58,8 +58,6 @@ A full-stack application for monitoring forum group members and tracking their a
 ├── prisma/                  # Database schema and migrations
 │   ├── schema.prisma
 │   └── migrations/
-└── .github/workflows/       # GitHub Actions workflows
-    └── cron.yml            # Hourly scraping job
 ```
 
 ## Database Schema
@@ -160,16 +158,18 @@ cd frontend && pnpm build
 
 ## Deployment
 
-The application uses GitHub Actions for automated scraping:
+The application uses a Northflank cron Job for automated scraping:
 
-- **Schedule**: Runs hourly at minute 00 (UTC)
-- **Logic**: Only executes scraping if it's midnight in Paris time
-- **Manual Trigger**: Supports `workflow_dispatch` for manual runs
+- **Schedule**: Runs hourly
+- **Logic**: Only actually scrapes once the daily (midnight Paris) or weekly (Sunday 20h Paris) run is due for the current Paris date — tracked in the `ScrapeRun` table so a missed/delayed tick is caught up on the next one
+- **Retry**: Failed groups/members are retried across several rounds within a run before being reported as failed
+- **Alerting**: Posts to Discord (`DISCORD_WEBHOOK_URL`) if anything is still failing after retries, if the run crashes, or if the midnight run hasn't succeeded by 01:00 Paris
 
-### GitHub Secrets Required
+### Environment Variables Required (Northflank)
 
 - `DATABASE_URL`: PostgreSQL connection string
 - `FORUM_BASE_URL`: Base URL of the forum
+- `DISCORD_WEBHOOK_URL`: Discord webhook for failure alerts (optional)
 
 ## Key Features Explained
 

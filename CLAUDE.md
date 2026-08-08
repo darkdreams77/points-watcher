@@ -28,7 +28,7 @@ pnpm backup:local     # Manually trigger member backup
 
 ### Two separate apps, one repo
 
-**Scraper** (`src/`): Node.js/TypeScript scripts run via GitHub Actions (`.github/workflows/cron.yml`). Runs every hour in CI; `src/index.ts` only actually scrapes once a "daily" (midnight Paris) or "weekly" (Sunday 20h Paris) run is due for the current Paris calendar date — tracked in the `ScrapeRun` table so a delayed/missed hourly tick is caught up on the next one instead of being silently skipped. Talks directly to Prisma/PostgreSQL.
+**Scraper** (`src/`): Node.js/TypeScript scripts run via a Northflank cron Job, hourly. `src/index.ts` only actually scrapes once a "daily" (midnight Paris) or "weekly" (Sunday 20h Paris) run is due for the current Paris calendar date — tracked in the `ScrapeRun` table so a delayed/missed hourly tick is caught up on the next one instead of being silently skipped. Talks directly to Prisma/PostgreSQL.
 
 **Frontend**: Next.js 15 App Router (`app/`). Shared client-side code lives at the root: `api.ts`, `types.ts`, `components/`, `hooks/`, `helpers/`. The `app/page.tsx` mounts a full BrowserRouter (React Router) inside Next.js — routing is handled entirely by React Router, not Next.js file routing.
 
@@ -85,4 +85,4 @@ FORUM_SESSION_COOKIE      # Session cookie for authenticated scraping (local dev
 DISCORD_WEBHOOK_URL       # Discord webhook for scrape-failure alerts (optional — logs a warning and skips the alert if unset)
 ```
 
-In GitHub Actions, `DATABASE_URL`, `FORUM_BASE_URL` and `DISCORD_WEBHOOK_URL` come from repository secrets. The session cookie is not needed in CI (public group pages only).
+In the Northflank Job, `DATABASE_URL`, `FORUM_BASE_URL` and `DISCORD_WEBHOOK_URL` are set as Northflank secrets/env vars. The session cookie is not needed there (public group pages only).
