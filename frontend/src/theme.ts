@@ -1,36 +1,35 @@
-import {
-  createTheme,
-  type ThemeOptions,
-  type PaletteMode,
-} from '@mui/material/styles';
+import { createTheme, type ThemeOptions, type PaletteMode } from '@mui/material/styles';
 
-// Palette encre/périwinkle — volontairement différente du bleu MUI par
-// défaut et des associations crème+serif / noir+néon trop vues.
+// Palette encre chaude + corail — inspirée de saveit.now : fond noir
+// chaud (pas un noir bleuté), accent terracotta plutôt qu'un bleu
+// générique de dashboard.
 const tokens = {
   dark: {
-    bg: '#10131A',
-    surface: '#1B1F2A',
-    text: '#EDEFF4',
-    textSecondary: '#9AA1B4',
-    accent: '#7C8CFF',
+    bg: '#0E0A09',
+    surface: '#1C1512',
+    text: '#F5EFEA',
+    textSecondary: '#A79C94',
+    accent: '#E8622E',
   },
   light: {
-    bg: '#F7F8FB',
+    bg: '#FAF6F3',
     surface: '#FFFFFF',
-    text: '#1B1F2A',
-    textSecondary: '#5B6178',
-    accent: '#4F5FE0',
+    text: '#231A16',
+    textSecondary: '#6B5D54',
+    accent: '#D9541F',
   },
 } as const;
 
+// Couleurs de statut/groupe volontairement laissées telles quelles —
+// pas touchées par ce passage de design.
 export const statusColors = {
-  light: {
+  dark: {
     actif: '#4ADE80',
     absent: '#F5A524',
     enDanger: '#FB7185',
     toDelete: '#64748B',
   },
-  dark: {
+  light: {
     actif: '#16A34A',
     absent: '#D97706',
     enDanger: '#E11D48',
@@ -41,6 +40,17 @@ export const statusColors = {
 export function getStatusColors(mode: PaletteMode) {
   return statusColors[mode];
 }
+
+const bodyFont = [
+  'Work Sans',
+  '-apple-system',
+  'BlinkMacSystemFont',
+  '"Segoe UI"',
+  'Arial',
+  'sans-serif',
+].join(',');
+
+const displayFont = ['Fraunces', 'Georgia', 'serif'].join(',');
 
 export function getDesignTokens(mode: PaletteMode): ThemeOptions {
   const t = tokens[mode];
@@ -53,19 +63,20 @@ export function getDesignTokens(mode: PaletteMode): ThemeOptions {
       primary: { main: t.accent },
     },
     typography: {
-      fontFamily: [
-        'Work Sans',
-        '-apple-system',
-        'BlinkMacSystemFont',
-        '"Segoe UI"',
-        'Arial',
-        'sans-serif',
-      ].join(','),
-      h5: { fontWeight: 700 },
-      h6: { fontWeight: 600 },
+      fontFamily: bodyFont,
+      h4: { fontFamily: displayFont, fontWeight: 500 },
+      h5: { fontFamily: displayFont, fontWeight: 500 },
+      h6: { fontFamily: displayFont, fontWeight: 600 },
       button: { fontWeight: 600, textTransform: 'none' },
     },
-    shape: { borderRadius: 8 },
+    shape: { borderRadius: 10 },
+    components: {
+      MuiButton: {
+        styleOverrides: {
+          root: { borderRadius: 999 },
+        },
+      },
+    },
   };
 }
 
