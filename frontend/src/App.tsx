@@ -53,14 +53,14 @@ const AppLayout: React.FC = () => {
           alignItems: 'center',
           justifyContent: 'flex-start',
           gap: '5px',
-          paddingLeft: '30px',
+          paddingLeft: { xs: '8px', sm: '30px' },
         }}
       >
         <IconButton
           color="inherit"
           edge="start"
           onClick={() => setIsDrawerOpen((prev) => !prev)}
-          sx={{ flex: '0 0 70px' }}
+          sx={{ flex: { xs: '0 0 44px', sm: '0 0 70px' } }}
         >
           <MenuIcon />
         </IconButton>
@@ -74,6 +74,12 @@ const AppLayout: React.FC = () => {
         {isAuthenticated ? (
           <Tooltip title="Connecté">
             <CheckCircleIcon sx={{ mr: 1 }} fontSize="small" />
+          </Tooltip>
+        ) : isMobile ? (
+          <Tooltip title="Se connecter">
+            <IconButton color="inherit" onClick={() => showAuthModal()} sx={{ mr: 0.5 }}>
+              <LoginIcon fontSize="small" />
+            </IconButton>
           </Tooltip>
         ) : (
           <Button
@@ -105,7 +111,8 @@ const AppLayout: React.FC = () => {
           component="main"
           sx={{
             flexGrow: 1,
-            p: 3,
+            minWidth: 0,
+            p: { xs: 1, sm: 3 },
           }}
         >
           <Toolbar />
