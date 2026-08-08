@@ -123,7 +123,16 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
           const color = group ? getGroupColor(group) : '#000000';
 
           return (
-            <Box sx={{ lineHeight: 1.2, py: 0.5 }}>
+            <Box
+              sx={{
+                lineHeight: 1.2,
+                py: 0.5,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+              }}
+            >
               <a
                 href={row.profileUrl}
                 target="_blank"
@@ -141,10 +150,6 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
                   sx={{
                     fontSize: '0.7rem',
                     color: 'text.secondary',
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
                   }}
                 >
                   {row.faceClaim}
