@@ -112,6 +112,7 @@ app.get('/groups/:id/members', async (req, res) => {
         lastPoints: m.lastPoints,
         lastScanAt: m.lastScanAt,
         lastChangeAt: m.lastChangeAt,
+        faceClaim: m.faceClaim,
         profileUrl: m.profileUrl,
         manualStatus: m.manualStatus,
       }))
@@ -175,6 +176,7 @@ app.get('/members', async (_req, res) => {
     lastPoints: m.lastPoints,
     lastScanAt: m.lastScanAt,
     lastChangeAt: m.lastChangeAt,
+    faceClaim: m.faceClaim,
     manualStatus: m.manualStatus,
     profileUrl: m.profileUrl,
     groupId: m.groupId,

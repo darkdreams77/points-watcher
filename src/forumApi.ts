@@ -132,7 +132,14 @@ export async function fetchGroupMembersFromForum(
   return allMembers.filter((m) => m.forumId !== '1');
 }
 
-export async function fetchMemberRps(profileUrl: string): Promise<number> {
+export interface ForumMemberProfile {
+  points: number;
+  faceClaim: string | null;
+}
+
+export async function fetchMemberProfile(
+  profileUrl: string
+): Promise<ForumMemberProfile> {
   const res = await rateLimitedGet(profileUrl);
   const $ = cheerio.load(res.data);
 
@@ -144,5 +151,8 @@ export async function fetchMemberRps(profileUrl: string): Promise<number> {
     throw new Error(`Impossible de lire les points sur ${profileUrl}`);
   }
 
-  return points;
+  const faceClaimRaw = $('#user_avatar .user_fc field div').text().trim();
+  const faceClaim = faceClaimRaw.length > 0 ? faceClaimRaw : null;
+
+  return { points, faceClaim };
 }

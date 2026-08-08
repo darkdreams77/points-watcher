@@ -18,6 +18,7 @@ export async function backupMembers() {
       lastPoints: m.lastPoints,
       lastScanAt: m.lastScanAt,
       lastChangeAt: m.lastChangeAt,
+      faceClaim: m.faceClaim,
       manualStatus: m.manualStatus,
       groupId: m.groupId,
       // backupAt: laissé vide → DEFAULT now()

@@ -3,7 +3,7 @@ import 'dotenv/config';
 import { db } from './db';
 import {
   fetchGroupMembersFromForum,
-  fetchMemberRps,
+  fetchMemberProfile,
   ForumMemberInfo,
 } from './forumApi';
 import { backupMembers } from './backup';
@@ -118,14 +118,16 @@ export async function syncGroup(
 
   for (const member of membersInGroup) {
     try {
-      // Adapte si ta fonction prend profileUrl
-      const currentRps = await fetchMemberRps(member.profileUrl);
+      const { points: currentRps, faceClaim } = await fetchMemberProfile(
+        member.profileUrl
+      );
 
       const previous = member.lastPoints;
       const hasChanged = previous === null || previous !== currentRps;
 
       const data: any = {
         lastPoints: currentRps,
+        faceClaim,
         lastScanAt: now,
         lastChangeAt: hasChanged
           ? getUtcMidnightOfUtcDate(now)
