@@ -57,8 +57,8 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
     [selectionModel, refreshMembers, showAuthModal]
   );
 
-  const columns: GridColDef[] = useMemo(
-    () => [
+  const columns: GridColDef[] = useMemo(() => {
+    const allColumns: GridColDef[] = [
       {
         field: 'username',
         headerName: 'Membre',
@@ -178,7 +178,6 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
         sortable: false,
         ...(isMobile ? { width: 80 } : { flex: 0.6 }),
         renderCell: (params) => {
-          if (!isAuthenticated) return null;
           const m = params.row as Member & { lastChangeAtRaw: string | null };
 
           const setStatus = async (status: 'absent' | 'toDelete' | null) => {
@@ -193,9 +192,9 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
           return <StatusMenu status={m.manualStatus} onChange={setStatus} compact={isMobile} />;
         },
       },
-    ],
-    [groups, isMobile, colors, isAuthenticated]
-  );
+    ];
+    return allColumns.filter((col) => isAuthenticated || col.field !== 'actions');
+  }, [groups, isMobile, colors, isAuthenticated]);
 
   const rows = members.map((m) => {
     const { id, lastChangeAt, lastScanAt, ...rest } = m;

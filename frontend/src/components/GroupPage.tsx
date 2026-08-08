@@ -70,8 +70,8 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
     };
   });
 
-  const columns: GridColDef[] = useMemo(
-    () => [
+  const columns: GridColDef[] = useMemo(() => {
+    const allColumns: GridColDef[] = [
       {
         field: 'username',
         headerName: 'Membre',
@@ -158,7 +158,6 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
         sortable: false,
         ...(isMobile ? { width: 80 } : { flex: 0.6 }),
         renderCell: (params) => {
-          if (!isAuthenticated) return null;
           const m = params.row as Member & { lastChangeAtRaw: string | null };
 
           const setStatus = async (status: 'absent' | 'toDelete' | null) => {
@@ -178,9 +177,9 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
         headerName: 'Dernier scan',
         ...(isMobile ? { width: 160 } : { flex: 1 }),
       },
-    ],
-    [accentColor, isMobile, colors, isAuthenticated]
-  );
+    ];
+    return allColumns.filter((col) => isAuthenticated || col.field !== 'actions');
+  }, [accentColor, isMobile, colors, isAuthenticated]);
 
   const stats = useMemo(() => {
     let actifs = 0;
