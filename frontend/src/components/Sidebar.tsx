@@ -118,10 +118,7 @@ export const Sidebar = ({
                   mr: 1.5,
                 }}
               />
-              <ListItemText
-                primary={g.name}
-                secondary={`ForumId: ${g.forumId}`}
-              />
+              <ListItemText primary={g.name} />
             </ListItemButton>
           );
         })}
