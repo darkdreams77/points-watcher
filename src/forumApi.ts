@@ -164,7 +164,10 @@ export async function fetchMemberProfile(
     throw new Error(`Impossible de lire les points sur ${profileUrl}`);
   }
 
-  const faceClaimRaw = $('#user_avatar .user_fc field div').text().trim();
+  // Le champ "Faceclaim" custom du forum est dupliqué deux fois sur la page
+  // (une copie visible + une copie dans .hidden_fields avec le même id) —
+  // scoper à .hidden_fields comme pour les points pour n'en lire qu'une.
+  const faceClaimRaw = $('.hidden_fields #field_id-8 field div').text().trim();
   const faceClaim = faceClaimRaw.length > 0 ? faceClaimRaw : null;
 
   return { points, faceClaim };
