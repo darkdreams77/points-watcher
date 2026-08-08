@@ -59,12 +59,10 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
       const toDeleteOnly = flat.filter((m) => m.manualStatus === 'toDelete');
 
       setMembers(toDeleteOnly);
-    } catch (e) {
-      if (e instanceof UnauthorizedError) showAuthModal(refresh);
     } finally {
       setLoading(false);
     }
-  }, [groups, showAuthModal]);
+  }, [groups]);
 
   const applyBulkStatus = useCallback(
     async (status: 'absent' | 'toDelete' | null) => {

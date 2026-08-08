@@ -36,11 +36,8 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
     setLoading(true);
     fetchGroupMembers(group.id)
       .then(setMembers)
-      .catch((e) => {
-        if (e instanceof UnauthorizedError) showAuthModal(refreshMembers);
-      })
       .finally(() => setLoading(false));
-  }, [group.id, showAuthModal]);
+  }, [group.id]);
 
   // 2) Chargement initial + quand le groupe change
   useEffect(() => {

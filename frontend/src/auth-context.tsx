@@ -2,13 +2,18 @@ import React, { createContext, useCallback, useContext, useRef, useState } from 
 import { AuthModal } from './components/AuthModal';
 
 interface AuthContextType {
+  isAuthenticated: boolean;
   showAuthModal: (onSuccess?: () => void) => void;
 }
 
-const AuthContext = createContext<AuthContextType>({ showAuthModal: () => {} });
+const AuthContext = createContext<AuthContextType>({
+  isAuthenticated: false,
+  showAuthModal: () => {},
+});
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const pendingCallbackRef = useRef<(() => void) | undefined>(undefined);
 
   const showAuthModal = useCallback((onSuccess?: () => void) => {
@@ -18,12 +23,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const handleSuccess = useCallback(() => {
     setOpen(false);
+    setIsAuthenticated(true);
     pendingCallbackRef.current?.();
     pendingCallbackRef.current = undefined;
   }, []);
 
   return (
-    <AuthContext.Provider value={{ showAuthModal }}>
+    <AuthContext.Provider value={{ isAuthenticated, showAuthModal }}>
       {children}
       <AuthModal open={open} onClose={() => setOpen(false)} onSuccess={handleSuccess} />
     </AuthContext.Provider>

@@ -65,8 +65,8 @@ app.post('/auth', (req, res) => {
   res.json({ ok: true });
 });
 
-// Liste des groupes
-app.get('/groups', requireAuth, async (_req, res) => {
+// Liste des groupes — lecture publique, seules les mutations sont protégées
+app.get('/groups', async (_req, res) => {
   try {
     const groups = await db.group.findMany({
       orderBy: { name: 'asc' },
@@ -86,7 +86,7 @@ app.get('/groups', requireAuth, async (_req, res) => {
 });
 
 // Membres d’un groupe
-app.get('/groups/:id/members', requireAuth, async (req, res) => {
+app.get('/groups/:id/members', async (req, res) => {
   const id = req.params.id as string;
 
   try {
@@ -157,7 +157,7 @@ app.patch('/members/:id/last-change-at', requireAuth, async (req, res) => {
   res.json(member);
 });
 
-app.get('/members', requireAuth, async (_req, res) => {
+app.get('/members', async (_req, res) => {
   const members = await db.member.findMany({
     include: {
       group: true,

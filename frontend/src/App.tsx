@@ -1,12 +1,14 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Routes, Route, Navigate, useParams } from 'react-router-dom';
-import { fetchGroups, UnauthorizedError } from './api';
+import { fetchGroups } from './api';
 import type { Group } from './types';
 import { GroupPage } from './components/GroupPage';
-import { Box, Toolbar, AppBar, Typography, IconButton, Tooltip } from '@mui/material';
+import { Box, Toolbar, AppBar, Typography, IconButton, Tooltip, Button } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
+import LoginIcon from '@mui/icons-material/Login';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { Sidebar } from './components/Sidebar';
 import { DangerPage } from './components/DangerPage';
 import { AllMembersPage } from './components/AllMembersPage';
@@ -18,8 +20,7 @@ import { ThemeModeProvider, useThemeMode } from './theme-context';
 const AppLayout: React.FC = () => {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
-  const [unauthorized, setUnauthorized] = useState(false);
-  const { showAuthModal } = useAuth();
+  const { isAuthenticated, showAuthModal } = useAuth();
   const { mode, toggleMode } = useThemeMode();
 
   const isMobile = useIsMobile();
@@ -29,26 +30,14 @@ const AppLayout: React.FC = () => {
   const loadGroups = useCallback(() => {
     setLoading(true);
     fetchGroups()
-      .then((data) => {
-        setGroups(data);
-        setUnauthorized(false);
-      })
-      .catch((e) => {
-        if (e instanceof UnauthorizedError) {
-          setUnauthorized(true);
-          showAuthModal(loadGroups);
-        }
-      })
+      .then(setGroups)
       .finally(() => setLoading(false));
-  }, [showAuthModal]);
+  }, []);
 
   useEffect(() => {
     loadGroups();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [loadGroups]);
 
-  if (unauthorized)
-    return <div style={{ padding: 16 }}>Authentification requise…</div>;
   if (loading)
     return <div style={{ padding: 16 }}>Chargement des groupes…</div>;
   if (!groups.length)
@@ -81,6 +70,22 @@ const AppLayout: React.FC = () => {
             ILH – Suivi des RPs
           </Typography>
         </Toolbar>
+
+        {isAuthenticated ? (
+          <Tooltip title="Connecté">
+            <CheckCircleIcon sx={{ mr: 1 }} fontSize="small" />
+          </Tooltip>
+        ) : (
+          <Button
+            color="inherit"
+            size="small"
+            startIcon={<LoginIcon />}
+            onClick={() => showAuthModal()}
+            sx={{ mr: 1, textTransform: 'none' }}
+          >
+            Se connecter
+          </Button>
+        )}
 
         <Tooltip title={mode === 'dark' ? 'Passer en clair' : 'Passer en sombre'}>
           <IconButton color="inherit" onClick={toggleMode} sx={{ mr: 1 }}>
