@@ -8,6 +8,7 @@ import { Box, Typography, Chip } from '@mui/material';
 import { computeStatus } from '../helpers/status';
 import { StatusMenu } from './StatusMenu';
 import { BulkActionsBar } from './BulkActionsBar';
+import { EditDateAction } from './EditDateAction';
 import { formatDateParis, formatDateWithHours } from '../helpers/formatDate';
 import { useIsMobile } from '../hooks/useIsMobile';
 
@@ -61,6 +62,7 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
     return {
       id,
       lastChangeAt: formatDateParis(lastChangeAt),
+      lastChangeAtRaw: lastChangeAt,
       lastScanAt: formatDateWithHours(lastScanAt),
       status: computeStatus(m),
       ...rest,
@@ -139,7 +141,7 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
         sortable: false,
         ...(isMobile ? { width: 100 } : { flex: 0.8 }),
         renderCell: (params) => {
-          const m = params.row as Member;
+          const m = params.row as Member & { lastChangeAtRaw: string | null };
 
           const setStatus = async (status: 'absent' | 'toDelete' | null) => {
             try {
@@ -150,7 +152,16 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
             }
           };
 
-          return <StatusMenu status={m.manualStatus} onChange={setStatus} />;
+          return (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <StatusMenu status={m.manualStatus} onChange={setStatus} />
+              <EditDateAction
+                memberId={m.id}
+                currentLastChangeAt={m.lastChangeAtRaw}
+                onSaved={refreshMembers}
+              />
+            </Box>
+          );
         },
       },
       {

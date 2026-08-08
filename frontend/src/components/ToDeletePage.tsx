@@ -11,6 +11,7 @@ import { computeStatus } from '../helpers/status';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { StatusMenu } from './StatusMenu';
 import { BulkActionsBar } from './BulkActionsBar';
+import { EditDateAction } from './EditDateAction';
 
 interface MemberWithGroup extends Member {
   groupId: string;
@@ -199,7 +200,7 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
         sortable: false,
         ...(isMobile ? { width: 100 } : { flex: 0.8 }),
         renderCell: (params) => {
-          const m = params.row as Member;
+          const m = params.row as Member & { lastChangeAtRaw: string | null };
 
           const setStatus = async (status: 'absent' | 'toDelete' | null) => {
             try {
@@ -210,7 +211,16 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
             }
           };
 
-          return <StatusMenu status={m.manualStatus} onChange={setStatus} />;
+          return (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <StatusMenu status={m.manualStatus} onChange={setStatus} />
+              <EditDateAction
+                memberId={m.id}
+                currentLastChangeAt={m.lastChangeAtRaw}
+                onSaved={refresh}
+              />
+            </Box>
+          );
         },
       },
     ],
@@ -222,6 +232,7 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
     return {
       id,
       lastChangeAt: formatDateParis(lastChangeAt),
+      lastChangeAtRaw: lastChangeAt,
       lastScanAt: formatDateWithHours(lastScanAt),
       status: computeStatus(m),
       ...rest,

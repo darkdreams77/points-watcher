@@ -9,6 +9,7 @@ import { formatDateParis } from '../helpers/formatDate';
 import { computeStatus } from '../helpers/status';
 import { StatusMenu } from './StatusMenu';
 import { BulkActionsBar } from './BulkActionsBar';
+import { EditDateAction } from './EditDateAction';
 import { useIsMobile } from '../hooks/useIsMobile';
 
 interface Props {
@@ -161,7 +162,7 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
         sortable: false,
         ...(isMobile ? { width: 100 } : { flex: 0.8 }),
         renderCell: (params) => {
-          const m = params.row as Member;
+          const m = params.row as Member & { lastChangeAtRaw: string | null };
 
           const setStatus = async (status: 'absent' | 'toDelete' | null) => {
             try {
@@ -172,7 +173,16 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
             }
           };
 
-          return <StatusMenu status={m.manualStatus} onChange={setStatus} />;
+          return (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <StatusMenu status={m.manualStatus} onChange={setStatus} />
+              <EditDateAction
+                memberId={m.id}
+                currentLastChangeAt={m.lastChangeAtRaw}
+                onSaved={refreshMembers}
+              />
+            </Box>
+          );
         },
       },
     ],
@@ -184,6 +194,7 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
     return {
       id,
       lastChangeAt: formatDateParis(lastChangeAt),
+      lastChangeAtRaw: lastChangeAt,
       status: computeStatus(m),
       ...rest,
     };
