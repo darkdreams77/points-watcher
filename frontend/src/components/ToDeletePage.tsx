@@ -27,7 +27,7 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
   const [members, setMembers] = useState<MemberWithGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const isMobile = useIsMobile();
-  const { showAuthModal } = useAuth();
+  const { showAuthModal, isAuthenticated } = useAuth();
   const theme = useTheme();
   const colors = getStatusColors(theme.palette.mode);
   const [selectionModel, setSelectionModel] = useState<GridRowSelectionModel>({
@@ -195,14 +195,30 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
       {
         field: 'lastChangeAt',
         headerName: 'Date du dernier RP',
-        ...(isMobile ? { width: 120 } : { flex: 1 }),
+        ...(isMobile ? { width: 150 } : { flex: 1 }),
+        renderCell: (params) => {
+          const m = params.row as Member & { lastChangeAtRaw: string | null };
+          return (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <span>{params.value as string}</span>
+              {isAuthenticated && (
+                <EditDateAction
+                  memberId={m.id}
+                  currentLastChangeAt={m.lastChangeAtRaw}
+                  onSaved={refresh}
+                />
+              )}
+            </Box>
+          );
+        },
       },
       {
         field: 'actions',
         headerName: 'Actions',
         sortable: false,
-        ...(isMobile ? { width: 120 } : { flex: 0.8 }),
+        ...(isMobile ? { width: 80 } : { flex: 0.6 }),
         renderCell: (params) => {
+          if (!isAuthenticated) return null;
           const m = params.row as Member & { lastChangeAtRaw: string | null };
 
           const setStatus = async (status: 'absent' | 'toDelete' | null) => {
@@ -214,20 +230,11 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
             }
           };
 
-          return (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <StatusMenu status={m.manualStatus} onChange={setStatus} compact={isMobile} />
-              <EditDateAction
-                memberId={m.id}
-                currentLastChangeAt={m.lastChangeAtRaw}
-                onSaved={refresh}
-              />
-            </Box>
-          );
+          return <StatusMenu status={m.manualStatus} onChange={setStatus} compact={isMobile} />;
         },
       },
     ],
-    [groups, isMobile, colors]
+    [groups, isMobile, colors, isAuthenticated]
   );
 
   const rows = sorted.map((m) => {
@@ -255,11 +262,13 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
         />
       </Box>
 
-      <BulkActionsBar
-        count={selectionModel.ids.size}
-        onApply={applyBulkStatus}
-        onClear={() => setSelectionModel({ type: 'include', ids: new Set() })}
-      />
+      {isAuthenticated && (
+        <BulkActionsBar
+          count={selectionModel.ids.size}
+          onApply={applyBulkStatus}
+          onClear={() => setSelectionModel({ type: 'include', ids: new Set() })}
+        />
+      )}
 
       <Box
         sx={{
@@ -287,7 +296,7 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
               columns={columns}
               loading={loading}
               disableRowSelectionOnClick
-              checkboxSelection
+              checkboxSelection={isAuthenticated}
               rowSelectionModel={selectionModel}
               onRowSelectionModelChange={setSelectionModel}
               sortingOrder={['asc', 'desc']}

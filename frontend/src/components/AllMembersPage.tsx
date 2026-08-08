@@ -7,7 +7,7 @@ import { fetchAllMembers, updateMemberStatus, UnauthorizedError } from '../api';
 import { useAuth } from '../auth-context';
 import { getGroupColor } from '../helpers/groupColors';
 import { formatDateParis } from '../helpers/formatDate';
-import { computeStatus } from '../helpers/status';
+import { computeStatus, type ComputedStatus } from '../helpers/status';
 import { getStatusColors } from '../theme';
 import { StatusMenu } from './StatusMenu';
 import { BulkActionsBar } from './BulkActionsBar';
@@ -22,7 +22,7 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
   const [members, setMembers] = useState<MemberWithGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const isMobile = useIsMobile();
-  const { showAuthModal } = useAuth();
+  const { showAuthModal, isAuthenticated } = useAuth();
   const theme = useTheme();
   const colors = getStatusColors(theme.palette.mode);
   const [selectionModel, setSelectionModel] = useState<GridRowSelectionModel>({
@@ -125,8 +125,7 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
         ...(isMobile ? { width: 120 } : { flex: 0.8 }),
         sortable: false,
         renderCell: (params) => {
-          const row = params.row as MemberWithGroup;
-          const status = computeStatus(row);
+          const status = params.value as ComputedStatus;
           const label =
             status === 'actif'
               ? 'Actif·ve'
@@ -156,14 +155,30 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
       {
         field: 'lastChangeAt',
         headerName: 'Date du dernier RP',
-        ...(isMobile ? { width: 120 } : { flex: 1 }),
+        ...(isMobile ? { width: 150 } : { flex: 1 }),
+        renderCell: (params) => {
+          const m = params.row as Member & { lastChangeAtRaw: string | null };
+          return (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <span>{params.value as string}</span>
+              {isAuthenticated && (
+                <EditDateAction
+                  memberId={m.id}
+                  currentLastChangeAt={m.lastChangeAtRaw}
+                  onSaved={refreshMembers}
+                />
+              )}
+            </Box>
+          );
+        },
       },
       {
         field: 'actions',
         headerName: 'Actions',
         sortable: false,
-        ...(isMobile ? { width: 120 } : { flex: 0.8 }),
+        ...(isMobile ? { width: 80 } : { flex: 0.6 }),
         renderCell: (params) => {
+          if (!isAuthenticated) return null;
           const m = params.row as Member & { lastChangeAtRaw: string | null };
 
           const setStatus = async (status: 'absent' | 'toDelete' | null) => {
@@ -175,20 +190,11 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
             }
           };
 
-          return (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <StatusMenu status={m.manualStatus} onChange={setStatus} compact={isMobile} />
-              <EditDateAction
-                memberId={m.id}
-                currentLastChangeAt={m.lastChangeAtRaw}
-                onSaved={refreshMembers}
-              />
-            </Box>
-          );
+          return <StatusMenu status={m.manualStatus} onChange={setStatus} compact={isMobile} />;
         },
       },
     ],
-    [groups, isMobile, colors]
+    [groups, isMobile, colors, isAuthenticated]
   );
 
   const rows = members.map((m) => {
@@ -260,11 +266,13 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
         />
       </Box>
 
-      <BulkActionsBar
-        count={selectionModel.ids.size}
-        onApply={applyBulkStatus}
-        onClear={() => setSelectionModel({ type: 'include', ids: new Set() })}
-      />
+      {isAuthenticated && (
+        <BulkActionsBar
+          count={selectionModel.ids.size}
+          onApply={applyBulkStatus}
+          onClear={() => setSelectionModel({ type: 'include', ids: new Set() })}
+        />
+      )}
 
       <Box
         sx={{
@@ -293,7 +301,7 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
               columns={columns}
               loading={loading}
               disableRowSelectionOnClick
-              checkboxSelection
+              checkboxSelection={isAuthenticated}
               rowSelectionModel={selectionModel}
               onRowSelectionModelChange={setSelectionModel}
               sortingOrder={['asc', 'desc']}
