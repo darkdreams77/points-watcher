@@ -11,6 +11,7 @@ export interface Member {
   lastPoints: number | null;
   lastScanAt: string | null;
   lastChangeAt: string | null;
+  faceClaim?: string | null;
   profileUrl: string;
   manualStatus?: 'absent' | 'toDelete' | null;
   groupId?: string;

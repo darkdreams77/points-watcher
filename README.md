@@ -4,7 +4,7 @@ A full-stack application for monitoring forum group members and tracking their a
 
 ## Features
 
-- **Automated Scraping**: Hourly GitHub Actions cron job that runs at midnight (Paris time) to sync member data
+- **Automated Scraping**: Hourly Northflank cron Job that syncs member data once a day (midnight Paris time) or once a week (Sunday 20h), with catch-up retry and Discord alerting on failure
 - **Multi-Group Support**: Track members across multiple forum groups
 - **Activity Tracking**: Monitor member points (RPs) and detect changes
 - **Group Transfer Detection**: Automatically detect when members move between groups
@@ -58,8 +58,6 @@ A full-stack application for monitoring forum group members and tracking their a
 ├── prisma/                  # Database schema and migrations
 │   ├── schema.prisma
 │   └── migrations/
-└── .github/workflows/       # GitHub Actions workflows
-    └── cron.yml            # Hourly scraping job
 ```
 
 ## Database Schema
@@ -73,23 +71,36 @@ A full-stack application for monitoring forum group members and tracking their a
 - **Member**: Forum members with activity tracking
 
   - `id`, `forumId`, `username`, `profileUrl`, `groupId`
-  - `lastPoints`, `lastScanAt`, `lastChangeAt`
+  - `lastPoints`, `lastScanAt`, `lastChangeAt`, `faceClaim`
   - `manualStatus` (optional: "absent" or "toDelete")
 
 - **MemberBackup**: Historical backups of member data
+
   - Stores snapshots before updates
 
+- **ScrapeRun**: Tracks whether the daily/weekly scrape has already succeeded for a given Paris calendar date
+  - `kind` ("daily" | "weekly"), `targetDate`, `status` ("running" | "success" | "failed")
+  - Lets the hourly cron tick catch up a missed/delayed run instead of silently skipping it
+
 ## API Endpoints
+
+All `GET` routes are public. Mutations require a valid `auth_token` cookie (see Auth below).
+
+### Auth
+
+- `POST /auth` - Log in with `{ password }`, sets the `auth_token` cookie
+- `GET /auth/status` - Protected; confirms the current cookie is still valid
 
 ### Groups
 
 - `GET /groups` - List all groups
-- `GET /groups/:id/members` - Get members of a specific group
+- `GET /groups/:id/members` - Get members of a specific group (by Prisma `id`, not `forumId`)
 
 ### Members
 
 - `GET /members` - List all members with group information
-- `PATCH /members/:id/status` - Update member manual status
+- `PATCH /members/:id/status` - Protected; update `manualStatus` ("absent" | "toDelete" | null)
+- `PATCH /members/:id/last-change-at` - Protected; manually override `lastChangeAt`
 
 ## Setup
 
@@ -108,7 +119,13 @@ DATABASE_URL=postgresql://user:password@host:port/database
 FORUM_BASE_URL=https://your-forum-url.com
 FORUM_SESSION_COOKIE=your_session_cookie_here
 PORT=4000
+AUTH_PASSWORD=choose_a_login_password
+AUTH_SECRET=choose_a_random_secret
+FRONTEND_URL=http://localhost:5173
+DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/...   # optional, alerts are skipped if unset
 ```
+
+In `frontend/`, optionally set `VITE_API_BASE` (defaults to `http://localhost:4000`).
 
 ### Installation
 
@@ -160,16 +177,18 @@ cd frontend && pnpm build
 
 ## Deployment
 
-The application uses GitHub Actions for automated scraping:
+The application uses a Northflank cron Job for automated scraping:
 
-- **Schedule**: Runs hourly at minute 00 (UTC)
-- **Logic**: Only executes scraping if it's midnight in Paris time
-- **Manual Trigger**: Supports `workflow_dispatch` for manual runs
+- **Schedule**: Runs hourly
+- **Logic**: Only actually scrapes once the daily (midnight Paris) or weekly (Sunday 20h Paris) run is due for the current Paris date — tracked in the `ScrapeRun` table so a missed/delayed tick is caught up on the next one
+- **Retry**: Failed groups/members are retried across several rounds within a run before being reported as failed
+- **Alerting**: Posts to Discord (`DISCORD_WEBHOOK_URL`) if anything is still failing after retries, if the run crashes, or if the midnight run hasn't succeeded by 01:00 Paris
 
-### GitHub Secrets Required
+### Environment Variables Required (Northflank)
 
 - `DATABASE_URL`: PostgreSQL connection string
 - `FORUM_BASE_URL`: Base URL of the forum
+- `DISCORD_WEBHOOK_URL`: Discord webhook for failure alerts (optional)
 
 ## Key Features Explained
 

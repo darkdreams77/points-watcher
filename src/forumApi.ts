@@ -36,24 +36,48 @@ function sleep(ms: number) {
 const MIN_INTERVAL_MS = 1500;
 let lastRequestTime = 0;
 
+const MAX_RETRIES = 3;
+const RETRY_BASE_MS = 2000;
+
 export async function rateLimitedGet(url: string) {
   const c = getClient();
 
-  const now = Date.now();
-  const elapsed = now - lastRequestTime;
-  if (elapsed < MIN_INTERVAL_MS) {
-    await sleep(MIN_INTERVAL_MS - elapsed);
+  let lastError: Error | null = null;
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    const now = Date.now();
+    const elapsed = now - lastRequestTime;
+    if (elapsed < MIN_INTERVAL_MS) {
+      await sleep(MIN_INTERVAL_MS - elapsed);
+    }
+
+    try {
+      const res = await c.get<string>(url, {
+        validateStatus: () => true,
+        timeout: 15000,
+      });
+      lastRequestTime = Date.now();
+
+      if (res.status < 500) return res;
+
+      lastError = new Error(`Remote ${res.status} on ${url}`);
+      console.warn(
+        `⚠ Tentative ${attempt}/${MAX_RETRIES} échouée (${res.status}) — ${url}`
+      );
+    } catch (e) {
+      lastRequestTime = Date.now();
+      lastError = e instanceof Error ? e : new Error(String(e));
+      console.warn(
+        `⚠ Tentative ${attempt}/${MAX_RETRIES} échouée (${lastError.message}) — ${url}`
+      );
+    }
+
+    if (attempt < MAX_RETRIES) {
+      await sleep(RETRY_BASE_MS * attempt);
+    }
   }
 
-  const res = await c.get<string>(url, { validateStatus: () => true });
-  lastRequestTime = Date.now();
-
-  if (res.status >= 500) {
-    // 5xx = problème côté forum, on ABORT ce run pour cette page
-    throw new Error(`Remote 5xx (${res.status}) on ${url}`);
-  }
-
-  return res;
+  throw lastError!;
 }
 
 const SELECTOR_MEMBER_ROW = 'table.table1 tr';
@@ -121,7 +145,14 @@ export async function fetchGroupMembersFromForum(
   return allMembers.filter((m) => m.forumId !== '1');
 }
 
-export async function fetchMemberRps(profileUrl: string): Promise<number> {
+export interface ForumMemberProfile {
+  points: number;
+  faceClaim: string | null;
+}
+
+export async function fetchMemberProfile(
+  profileUrl: string
+): Promise<ForumMemberProfile> {
   const res = await rateLimitedGet(profileUrl);
   const $ = cheerio.load(res.data);
 
@@ -133,5 +164,11 @@ export async function fetchMemberRps(profileUrl: string): Promise<number> {
     throw new Error(`Impossible de lire les points sur ${profileUrl}`);
   }
 
-  return points;
+  // Le champ "Faceclaim" custom du forum est dupliqué deux fois sur la page
+  // (une copie visible + une copie dans .hidden_fields avec le même id) —
+  // scoper à .hidden_fields comme pour les points pour n'en lire qu'une.
+  const faceClaimRaw = $('.hidden_fields #field_id-8 field div').text().trim();
+  const faceClaim = faceClaimRaw.length > 0 ? faceClaimRaw : null;
+
+  return { points, faceClaim };
 }

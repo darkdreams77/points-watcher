@@ -1,2 +1,5 @@
 .env
 node_modules
+.next
+dist
+scrape-dry-run.json

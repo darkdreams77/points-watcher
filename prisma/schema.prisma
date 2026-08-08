@@ -26,6 +26,7 @@ model Member {
   lastPoints   Int?
   lastScanAt   DateTime?
   lastChangeAt DateTime?
+  faceClaim    String?
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -40,7 +41,24 @@ model MemberBackup {
   lastPoints   Int?
   lastScanAt   DateTime?
   lastChangeAt DateTime?
+  faceClaim    String?
   manualStatus String?
   groupId      String
   backupAt     DateTime @default(now())
+}
+
+// Un run par (kind, targetDate) — permet au cron de savoir, à chaque
+// tick horaire, si le scraping du jour/de la semaine a déjà réussi
+// (rattrapage en cas de tick manqué/retardé) plutôt que de dépendre
+// d'un seul créneau horaire précis.
+model ScrapeRun {
+  id         String    @id @default(cuid())
+  kind       String // "daily" | "weekly"
+  targetDate String // date Paris (YYYY-MM-DD) à laquelle ce run correspond
+  status     String // "running" | "success" | "failed"
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+  error      String?
+
+  @@unique([kind, targetDate])
 }

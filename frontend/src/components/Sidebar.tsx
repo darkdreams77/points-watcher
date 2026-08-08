@@ -40,8 +40,8 @@ export const Sidebar = ({
   };
 
   const drawerContent = (
-    <Box sx={{ overflow: 'auto' }}>
-      <List>
+    <Box sx={{ overflow: 'auto', px: 1 }}>
+      <List sx={{ '& .MuiListItemButton-root': { borderRadius: 1 } }}>
         <ListItemButton
           onClick={() => handleNavClick(`../all-members`)}
           sx={{
@@ -49,21 +49,25 @@ export const Sidebar = ({
               ? 'action.selected'
               : 'transparent',
             '&:hover': {
-              backgroundColor: isActive('/members')
+              backgroundColor: isActive('/all-members')
                 ? 'action.selected'
                 : 'action.hover',
             },
           }}
         >
-          <GroupsIcon sx={{ color: 'white', mr: 1.5 }} />
+          <GroupsIcon sx={{ color: 'text.secondary', mr: 1.5 }} />
           <ListItemText primary="Tous les membres" />
         </ListItemButton>
         <ListItemButton
           onClick={() => handleNavClick(`../in-danger`)}
           sx={{
-            backgroundColor: isActive('/in-danger') ? '#1f1f1f' : 'transparent',
+            backgroundColor: isActive('/in-danger')
+              ? 'action.selected'
+              : 'transparent',
             '&:hover': {
-              backgroundColor: 'action.hover',
+              backgroundColor: isActive('/in-danger')
+                ? 'action.selected'
+                : 'action.hover',
             },
           }}
         >
@@ -96,10 +100,12 @@ export const Sidebar = ({
               onClick={() => handleNavClick(g.forumId)}
               sx={{
                 backgroundColor: isActive(g.forumId)
-                  ? '#1f1f1f'
+                  ? 'action.selected'
                   : 'transparent',
                 '&:hover': {
-                  backgroundColor: 'action.hover',
+                  backgroundColor: isActive(g.forumId)
+                    ? 'action.selected'
+                    : 'action.hover',
                 },
               }}
             >
@@ -112,10 +118,7 @@ export const Sidebar = ({
                   mr: 1.5,
                 }}
               />
-              <ListItemText
-                primary={g.name}
-                secondary={`ForumId: ${g.forumId}`}
-              />
+              <ListItemText primary={g.name} />
             </ListItemButton>
           );
         })}

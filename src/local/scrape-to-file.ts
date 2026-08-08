@@ -3,8 +3,7 @@ import 'dotenv/config';
 import { promises as fs } from 'fs';
 import { db } from '../db';
 // import { getYesterdayMidnightParisFromScan } from './time'; // ta fonction de date
-import { fetchGroupMembersFromForum } from '../forumApi'; // adapte le chemin
-import { fetchMemberPointsFromProfile } from '../profile-scraper';
+import { fetchGroupMembersFromForum, fetchMemberProfile } from '../forumApi';
 import type { Group, Member } from '@prisma/client';
 import { getUtcMidnightOfUtcDate } from '../utils/formatDate';
 
@@ -38,10 +37,13 @@ async function main() {
         where: { forumId: fm.forumId },
       });
 
-      // 5) scraping du profil pour récupérer les points
+      // 5) scraping du profil pour récupérer les points + le face claim
       let scrapedPoints: number | null = null;
+      let scrapedFaceClaim: string | null = null;
       try {
-        scrapedPoints = await fetchMemberPointsFromProfile(fm.profileUrl);
+        const profile = await fetchMemberProfile(fm.profileUrl);
+        scrapedPoints = profile.points;
+        scrapedFaceClaim = profile.faceClaim;
       } catch (err) {
         console.error(
           `⚠ Erreur en scrapant le profil ${fm.profileUrl}:`,
@@ -68,9 +70,11 @@ async function main() {
 
         // ce qui vient du scraping actuel
         scrapedPoints,
+        scrapedFaceClaim,
         // ce qui est en DB
         currentLastPoints,
         currentLastChangeAt,
+        currentFaceClaim: existing?.faceClaim ?? null,
 
         // ce que la prod écrirait
         shouldUpdate,
