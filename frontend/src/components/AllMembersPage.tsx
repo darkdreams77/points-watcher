@@ -1,5 +1,9 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { DataGrid, type GridColDef, type GridRowSelectionModel } from '@mui/x-data-grid';
+import {
+  DataGrid,
+  type GridColDef,
+  type GridRowSelectionModel,
+} from '@mui/x-data-grid';
 import { Box, Typography, Chip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import type { MemberWithGroup, Group, Member } from '../types';
@@ -19,10 +23,10 @@ function statusLabel(status: ComputedStatus): string {
   return status === 'actif'
     ? 'Actif·ve'
     : status === 'enDanger'
-    ? 'En danger'
-    : status === 'absent'
-    ? 'Absent·e'
-    : 'Inactif·ve';
+      ? 'En danger'
+      : status === 'absent'
+        ? 'Absent·e'
+        : 'Inactif·ve';
 }
 
 interface Props {
@@ -62,7 +66,8 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
         setSelectionModel({ type: 'include', ids: new Set() });
         await refreshMembers();
       } catch (e) {
-        if (e instanceof UnauthorizedError) showAuthModal(() => applyBulkStatus(status));
+        if (e instanceof UnauthorizedError)
+          showAuthModal(() => applyBulkStatus(status));
       }
     },
     [selectionModel, refreshMembers, showAuthModal]
@@ -100,7 +105,7 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
               </a>
               {row.faceClaim && (
                 <Box sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
-                  FC : {row.faceClaim}
+                  {row.faceClaim}
                 </Box>
               )}
             </Box>
@@ -195,7 +200,8 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
               await updateMemberStatus(m.id, status);
               await refreshMembers();
             } catch (e) {
-              if (e instanceof UnauthorizedError) showAuthModal(() => setStatus(status));
+              if (e instanceof UnauthorizedError)
+                showAuthModal(() => setStatus(status));
             }
           };
 
@@ -203,7 +209,9 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
         },
       },
     ];
-    return allColumns.filter((col) => isAuthenticated || col.field !== 'actions');
+    return allColumns.filter(
+      (col) => isAuthenticated || col.field !== 'actions'
+    );
   }, [groups, isMobile, colors, isAuthenticated]);
 
   const sortedMembers = [...members].sort((a, b) =>
@@ -323,7 +331,9 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
                     await refreshMembers();
                   } catch (e) {
                     if (e instanceof UnauthorizedError) {
-                      showAuthModal(() => updateMemberStatus(row.id, status).then(refreshMembers));
+                      showAuthModal(() =>
+                        updateMemberStatus(row.id, status).then(refreshMembers)
+                      );
                     }
                   }
                 }}

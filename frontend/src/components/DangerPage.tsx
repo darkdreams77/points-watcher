@@ -2,9 +2,17 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Box, Chip, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { DataGrid, type GridColDef, type GridRowSelectionModel } from '@mui/x-data-grid';
+import {
+  DataGrid,
+  type GridColDef,
+  type GridRowSelectionModel,
+} from '@mui/x-data-grid';
 import type { Group, Member } from '../types';
-import { fetchGroupMembers, updateMemberStatus, UnauthorizedError } from '../api';
+import {
+  fetchGroupMembers,
+  updateMemberStatus,
+  UnauthorizedError,
+} from '../api';
 import { useAuth } from '../auth-context';
 import { getGroupColor } from '../helpers/groupColors';
 import { computeStatus, type ComputedStatus } from '../helpers/status';
@@ -22,10 +30,10 @@ function statusLabel(status: ComputedStatus): string {
   return status === 'actif'
     ? 'Actif·ve'
     : status === 'enDanger'
-    ? 'En danger'
-    : status === 'absent'
-    ? 'Absent·e'
-    : 'Inactif·ve';
+      ? 'En danger'
+      : status === 'absent'
+        ? 'Absent·e'
+        : 'Inactif·ve';
 }
 
 interface MemberWithGroup extends Member {
@@ -61,7 +69,7 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
               ({
                 ...m,
                 groupId: g.id,
-              } as MemberWithGroup)
+              }) as MemberWithGroup
           );
         })
       );
@@ -85,7 +93,8 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
         setSelectionModel({ type: 'include', ids: new Set() });
         await refresh();
       } catch (e) {
-        if (e instanceof UnauthorizedError) showAuthModal(() => applyBulkStatus(status));
+        if (e instanceof UnauthorizedError)
+          showAuthModal(() => applyBulkStatus(status));
       }
     },
     [selectionModel, refresh, showAuthModal]
@@ -137,7 +146,7 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
               </a>
               {row.faceClaim && (
                 <Box sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
-                  FC : {row.faceClaim}
+                  {row.faceClaim}
                 </Box>
               )}
             </Box>
@@ -232,7 +241,8 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
               await updateMemberStatus(m.id, status);
               await refresh();
             } catch (e) {
-              if (e instanceof UnauthorizedError) showAuthModal(() => setStatus(status));
+              if (e instanceof UnauthorizedError)
+                showAuthModal(() => setStatus(status));
             }
           };
 
@@ -240,7 +250,9 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
         },
       },
     ];
-    return allColumns.filter((col) => isAuthenticated || col.field !== 'actions');
+    return allColumns.filter(
+      (col) => isAuthenticated || col.field !== 'actions'
+    );
   }, [groups, isMobile, colors, isAuthenticated]);
 
   const rows = sorted.map((m) => {
@@ -257,7 +269,15 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
 
   return (
     <Box sx={{ p: 1 }}>
-      <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+      <Box
+        sx={{
+          mb: 2,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2,
+          flexWrap: 'wrap',
+        }}
+      >
         <Typography variant="h5" sx={{ fontWeight: 700 }}>
           Membres en danger
         </Typography>
@@ -271,9 +291,14 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
             label="Copier la liste"
             text={rows
               .map((row) =>
-                buildDangerCopyText(row.username, row.faceClaim, row.lastPoints, row.lastChangeAt)
+                buildDangerCopyText(
+                  row.username,
+                  row.faceClaim,
+                  row.lastPoints,
+                  row.lastChangeAt
+                )
               )
-              .join('\n\n')}
+              .join('\n')}
           />
         )}
       </Box>
@@ -322,7 +347,9 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
                     await refresh();
                   } catch (e) {
                     if (e instanceof UnauthorizedError) {
-                      showAuthModal(() => updateMemberStatus(row.id, status).then(refresh));
+                      showAuthModal(() =>
+                        updateMemberStatus(row.id, status).then(refresh)
+                      );
                     }
                   }
                 }}

@@ -93,12 +93,24 @@ export const MemberCard: React.FC<Props> = ({
             {username}
           </Typography>
           {faceClaim && (
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-              FC : {faceClaim}
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ display: 'block' }}
+            >
+              {faceClaim}
             </Typography>
           )}
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mt: 0.5 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              flexWrap: 'wrap',
+              mt: 0.5,
+            }}
+          >
             <span
               style={{
                 backgroundColor: statusColor,
@@ -128,7 +140,10 @@ export const MemberCard: React.FC<Props> = ({
           </Box>
         </Box>
 
-        <Typography variant="body2" sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>
+        <Typography
+          variant="body2"
+          sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}
+        >
           {lastPoints ?? '-'} RPs
         </Typography>
       </Box>
@@ -148,7 +163,14 @@ export const MemberCard: React.FC<Props> = ({
             gap: 1,
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5,
+              minWidth: 0,
+            }}
+          >
             <Typography variant="caption" color="text.secondary" noWrap>
               RP : {lastChangeAtDisplay}
             </Typography>

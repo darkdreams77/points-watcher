@@ -2,9 +2,17 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Box, Chip, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { DataGrid, type GridColDef, type GridRowSelectionModel } from '@mui/x-data-grid';
+import {
+  DataGrid,
+  type GridColDef,
+  type GridRowSelectionModel,
+} from '@mui/x-data-grid';
 import type { Group, Member } from '../types';
-import { fetchGroupMembers, updateMemberStatus, UnauthorizedError } from '../api';
+import {
+  fetchGroupMembers,
+  updateMemberStatus,
+  UnauthorizedError,
+} from '../api';
 import { useAuth } from '../auth-context';
 import { getGroupColor } from '../helpers/groupColors';
 import { formatDateParis, formatDateWithHours } from '../helpers/formatDate';
@@ -20,10 +28,10 @@ function statusLabel(status: ComputedStatus): string {
   return status === 'actif'
     ? 'Actif·ve'
     : status === 'enDanger'
-    ? 'En danger'
-    : status === 'absent'
-    ? 'Absent·e'
-    : 'Inactif·ve';
+      ? 'En danger'
+      : status === 'absent'
+        ? 'Absent·e'
+        : 'Inactif·ve';
 }
 
 interface MemberWithGroup extends Member {
@@ -59,7 +67,7 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
               ({
                 ...m,
                 groupId: g.id,
-              } as MemberWithGroup)
+              }) as MemberWithGroup
           );
         })
       );
@@ -83,7 +91,8 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
         setSelectionModel({ type: 'include', ids: new Set() });
         await refresh();
       } catch (e) {
-        if (e instanceof UnauthorizedError) showAuthModal(() => applyBulkStatus(status));
+        if (e instanceof UnauthorizedError)
+          showAuthModal(() => applyBulkStatus(status));
       }
     },
     [selectionModel, refresh, showAuthModal]
@@ -135,7 +144,7 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
               </a>
               {row.faceClaim && (
                 <Box sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
-                  FC : {row.faceClaim}
+                  {row.faceClaim}
                 </Box>
               )}
             </Box>
@@ -230,7 +239,8 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
               await updateMemberStatus(m.id, status);
               await refresh();
             } catch (e) {
-              if (e instanceof UnauthorizedError) showAuthModal(() => setStatus(status));
+              if (e instanceof UnauthorizedError)
+                showAuthModal(() => setStatus(status));
             }
           };
 
@@ -238,7 +248,9 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
         },
       },
     ];
-    return allColumns.filter((col) => isAuthenticated || col.field !== 'actions');
+    return allColumns.filter(
+      (col) => isAuthenticated || col.field !== 'actions'
+    );
   }, [groups, isMobile, colors, isAuthenticated]);
 
   const rows = sorted.map((m) => {
@@ -310,7 +322,9 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
                     await refresh();
                   } catch (e) {
                     if (e instanceof UnauthorizedError) {
-                      showAuthModal(() => updateMemberStatus(row.id, status).then(refresh));
+                      showAuthModal(() =>
+                        updateMemberStatus(row.id, status).then(refresh)
+                      );
                     }
                   }
                 }}

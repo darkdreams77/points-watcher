@@ -7,8 +7,10 @@ export function buildDangerCopyText(
   const fc = faceClaim ?? '';
 
   if (!lastPoints) {
-    return `<w>@"${username}"</w> › <i>${fc}</i><br><x>n'a jamais rp</x>`;
+    return `<w>@"${username}"</w> › <i>${fc}</i>
+    <x>n'a jamais rp</x>`;
   }
 
-  return `<w>@"${username}"</w> › <i>${fc}</i><br><x>n'a pas rp depuis le ${lastChangeAtDisplay}</x>`;
+  return `<w>@"${username}"</w> › <i>${fc}</i>
+  <x>n'a pas rp depuis le ${lastChangeAtDisplay}</x>`;
 }

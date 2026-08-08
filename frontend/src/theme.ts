@@ -1,4 +1,8 @@
-import { createTheme, type ThemeOptions, type PaletteMode } from '@mui/material/styles';
+import {
+  createTheme,
+  type ThemeOptions,
+  type PaletteMode,
+} from '@mui/material/styles';
 
 // Palette encre/périwinkle — volontairement différente du bleu MUI par
 // défaut et des associations crème+serif / noir+néon trop vues.
@@ -20,13 +24,13 @@ const tokens = {
 } as const;
 
 export const statusColors = {
-  dark: {
+  light: {
     actif: '#4ADE80',
     absent: '#F5A524',
     enDanger: '#FB7185',
     toDelete: '#64748B',
   },
-  light: {
+  dark: {
     actif: '#16A34A',
     absent: '#D97706',
     enDanger: '#E11D48',

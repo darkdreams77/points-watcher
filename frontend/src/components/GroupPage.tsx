@@ -1,9 +1,17 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import type { Group, Member } from '../types';
-import { fetchGroupMembers, updateMemberStatus, UnauthorizedError } from '../api';
+import {
+  fetchGroupMembers,
+  updateMemberStatus,
+  UnauthorizedError,
+} from '../api';
 import { useAuth } from '../auth-context';
 import { getGroupColor } from '../helpers/groupColors';
-import { DataGrid, type GridColDef, type GridRowSelectionModel } from '@mui/x-data-grid';
+import {
+  DataGrid,
+  type GridColDef,
+  type GridRowSelectionModel,
+} from '@mui/x-data-grid';
 import { Box, Typography, Chip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { computeStatus, type ComputedStatus } from '../helpers/status';
@@ -19,10 +27,10 @@ function statusLabel(status: ComputedStatus): string {
   return status === 'actif'
     ? 'Actif·ve'
     : status === 'enDanger'
-    ? 'En danger'
-    : status === 'absent'
-    ? 'Absent·e'
-    : 'Inactif·ve';
+      ? 'En danger'
+      : status === 'absent'
+        ? 'Absent·e'
+        : 'Inactif·ve';
 }
 
 interface Props {
@@ -63,7 +71,8 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
         setSelectionModel({ type: 'include', ids: new Set() });
         await refreshMembers();
       } catch (e) {
-        if (e instanceof UnauthorizedError) showAuthModal(() => applyBulkStatus(status));
+        if (e instanceof UnauthorizedError)
+          showAuthModal(() => applyBulkStatus(status));
       }
     },
     [selectionModel, refreshMembers, showAuthModal]
@@ -110,7 +119,7 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
               </a>
               {row.faceClaim && (
                 <Box sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
-                  FC : {row.faceClaim}
+                  {row.faceClaim}
                 </Box>
               )}
             </Box>
@@ -181,7 +190,8 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
               await updateMemberStatus(m.id, status);
               await refreshMembers();
             } catch (e) {
-              if (e instanceof UnauthorizedError) showAuthModal(() => setStatus(status));
+              if (e instanceof UnauthorizedError)
+                showAuthModal(() => setStatus(status));
             }
           };
 
@@ -194,7 +204,9 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
         ...(isMobile ? { width: 160 } : { flex: 1 }),
       },
     ];
-    return allColumns.filter((col) => isAuthenticated || col.field !== 'actions');
+    return allColumns.filter(
+      (col) => isAuthenticated || col.field !== 'actions'
+    );
   }, [accentColor, isMobile, colors, isAuthenticated]);
 
   const stats = useMemo(() => {
@@ -292,7 +304,9 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
                   await refreshMembers();
                 } catch (e) {
                   if (e instanceof UnauthorizedError) {
-                    showAuthModal(() => updateMemberStatus(row.id, status).then(refreshMembers));
+                    showAuthModal(() =>
+                      updateMemberStatus(row.id, status).then(refreshMembers)
+                    );
                   }
                 }
               }}
