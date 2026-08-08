@@ -22,6 +22,8 @@ import { useIsMobile } from '../hooks/useIsMobile';
 import { StatusMenu } from './StatusMenu';
 import { BulkActionsBar } from './BulkActionsBar';
 import { EditDateAction } from './EditDateAction';
+import { CopyDangerCodeAction } from './CopyDangerCodeAction';
+import { buildToDeleteCopyText } from '../helpers/dangerCopyText';
 import { MemberCard } from './MemberCard';
 
 function statusLabel(status: ComputedStatus): string {
@@ -267,7 +269,7 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
 
   return (
     <Box sx={{ p: 1 }}>
-      <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+      <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
         <Typography variant="h5" sx={{ fontWeight: 700 }}>
           Membres à supprimer
         </Typography>
@@ -276,6 +278,12 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
           size="small"
           sx={{ backgroundColor: colors.toDelete, color: '#fff' }}
         />
+        {rows.length > 0 && (
+          <CopyDangerCodeAction
+            label="Copier la liste"
+            text={rows.map((row) => buildToDeleteCopyText(row.username, row.faceClaim)).join('\n')}
+          />
+        )}
       </Box>
 
       {isAuthenticated && (
