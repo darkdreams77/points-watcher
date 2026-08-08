@@ -128,41 +128,49 @@ export const MemberCard: React.FC<Props> = ({
 
       <Box
         sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 1,
           pt: 0.5,
           borderTop: '1px solid',
           borderColor: 'divider',
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-          <Typography variant="caption" color="text.secondary">
-            RP : {lastChangeAtDisplay}
-          </Typography>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 1,
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
+            <Typography variant="caption" color="text.secondary" noWrap>
+              RP : {lastChangeAtDisplay}
+            </Typography>
+            {isAuthenticated && (
+              <Box onClick={(e) => e.stopPropagation()} sx={{ flexShrink: 0 }}>
+                <EditDateAction
+                  memberId={memberId}
+                  currentLastChangeAt={lastChangeAtRaw}
+                  onSaved={onDateSaved}
+                />
+              </Box>
+            )}
+          </Box>
+
           {isAuthenticated && (
-            <Box onClick={(e) => e.stopPropagation()}>
-              <EditDateAction
-                memberId={memberId}
-                currentLastChangeAt={lastChangeAtRaw}
-                onSaved={onDateSaved}
-              />
+            <Box onClick={(e) => e.stopPropagation()} sx={{ flexShrink: 0 }}>
+              <StatusMenu status={manualStatus} onChange={onStatusChange} />
             </Box>
           )}
         </Box>
 
         {lastScanAtDisplay && (
-          <Typography variant="caption" color="text.secondary">
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ display: 'block', mt: 0.5 }}
+          >
             Scan : {lastScanAtDisplay}
           </Typography>
-        )}
-
-        {isAuthenticated && (
-          <Box onClick={(e) => e.stopPropagation()}>
-            <StatusMenu status={manualStatus} onChange={onStatusChange} />
-          </Box>
         )}
       </Box>
     </Box>
