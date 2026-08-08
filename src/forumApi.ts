@@ -51,13 +51,26 @@ export async function rateLimitedGet(url: string) {
       await sleep(MIN_INTERVAL_MS - elapsed);
     }
 
-    const res = await c.get<string>(url, { validateStatus: () => true });
-    lastRequestTime = Date.now();
+    try {
+      const res = await c.get<string>(url, {
+        validateStatus: () => true,
+        timeout: 15000,
+      });
+      lastRequestTime = Date.now();
 
-    if (res.status < 500) return res;
+      if (res.status < 500) return res;
 
-    lastError = new Error(`Remote ${res.status} on ${url}`);
-    console.warn(`⚠ Tentative ${attempt}/${MAX_RETRIES} échouée (${res.status}) — ${url}`);
+      lastError = new Error(`Remote ${res.status} on ${url}`);
+      console.warn(
+        `⚠ Tentative ${attempt}/${MAX_RETRIES} échouée (${res.status}) — ${url}`
+      );
+    } catch (e) {
+      lastRequestTime = Date.now();
+      lastError = e instanceof Error ? e : new Error(String(e));
+      console.warn(
+        `⚠ Tentative ${attempt}/${MAX_RETRIES} échouée (${lastError.message}) — ${url}`
+      );
+    }
 
     if (attempt < MAX_RETRIES) {
       await sleep(RETRY_BASE_MS * attempt);
