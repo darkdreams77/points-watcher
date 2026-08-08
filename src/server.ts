@@ -7,9 +7,23 @@ import { db } from './db';
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+// Vercel preview deployments get a random subdomain per build
+// (points-watcher-<hash>-<team>.vercel.app), so an exact FRONTEND_URL
+// match alone can't cover them — allow any preview URL for this
+// project alongside the configured production origin.
+const VERCEL_PREVIEW_REGEX =
+  /^https:\/\/points-watcher-[a-z0-9]+-darkdreams77s-projects\.vercel\.app$/;
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin(origin, callback) {
+      if (!origin) return callback(null, true);
+      if (origin === (process.env.FRONTEND_URL || 'http://localhost:5173')) {
+        return callback(null, true);
+      }
+      if (VERCEL_PREVIEW_REGEX.test(origin)) return callback(null, true);
+      callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
   })
 );
