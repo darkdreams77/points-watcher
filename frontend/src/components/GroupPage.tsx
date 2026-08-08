@@ -6,9 +6,7 @@ import { getGroupColor } from '../helpers/groupColors';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import { Box, Typography, Chip } from '@mui/material';
 import { computeStatus } from '../helpers/status';
-import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
-import PauseCircleOutlineIcon from '@mui/icons-material/PauseCircleOutline';
-import PlayCircleOutlinedIcon from '@mui/icons-material/PlayCircleOutlined';
+import { StatusMenu } from './StatusMenu';
 import { formatDateParis, formatDateWithHours } from '../helpers/formatDate';
 import { useIsMobile } from '../hooks/useIsMobile';
 
@@ -123,8 +121,6 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
         ...(isMobile ? { width: 100 } : { flex: 0.8 }),
         renderCell: (params) => {
           const m = params.row as Member;
-          const isAbsent = m.manualStatus === 'absent';
-          const isToDelete = m.manualStatus === 'toDelete';
 
           const setStatus = async (status: 'absent' | 'toDelete' | null) => {
             try {
@@ -135,56 +131,7 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
             }
           };
 
-          return (
-            <div
-              style={{
-                display: 'flex',
-                gap: 4,
-                alignItems: 'center',
-                justifyContent: 'center',
-                lineHeight: 1,
-                height: '100%',
-              }}
-            >
-              <button
-                onClick={() => setStatus(isAbsent ? null : 'absent')}
-                style={{
-                  padding: '8px 12px',
-                  lineHeight: 1,
-                  borderRadius: 4,
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  background: isAbsent ? '#506845' : '#2c2b2b',
-                }}
-                title={isAbsent ? 'Réactiver' : 'Mettre en absent·e'}
-              >
-                {isAbsent ? (
-                  <PlayCircleOutlinedIcon />
-                ) : (
-                  <PauseCircleOutlineIcon />
-                )}
-              </button>
-              {!isToDelete && (
-                <button
-                  onClick={() => setStatus(isToDelete ? null : 'toDelete')}
-                  style={{
-                    padding: '8px 12px',
-                    lineHeight: 1,
-                    borderRadius: 4,
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    background: isToDelete ? '#362d2d' : '#00000015',
-                    color: isToDelete ? '#fff' : 'inherit',
-                  }}
-                  title="Membre à supprimer"
-                >
-                  <PersonRemoveIcon />
-                </button>
-              )}
-            </div>
-          );
+          return <StatusMenu status={m.manualStatus} onChange={setStatus} />;
         },
       },
       {
