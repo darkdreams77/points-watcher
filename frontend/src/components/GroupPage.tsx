@@ -175,7 +175,7 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
             }
           };
 
-          return <StatusMenu status={m.manualStatus} onChange={setStatus} compact={isMobile} />;
+          return <StatusMenu status={m.manualStatus} onChange={setStatus} />;
         },
       },
       {

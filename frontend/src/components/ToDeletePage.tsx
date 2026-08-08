@@ -227,7 +227,7 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
             }
           };
 
-          return <StatusMenu status={m.manualStatus} onChange={setStatus} compact={isMobile} />;
+          return <StatusMenu status={m.manualStatus} onChange={setStatus} />;
         },
       },
     ];
