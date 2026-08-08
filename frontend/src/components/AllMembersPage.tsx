@@ -33,6 +33,7 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
   const { showAuthModal, isAuthenticated } = useAuth();
   const theme = useTheme();
   const colors = getStatusColors(theme.palette.mode);
+  const neutralBadge = getBadgeColors('#6B7280', theme.palette.mode);
   const [selectionModel, setSelectionModel] = useState<GridRowSelectionModel>({
     type: 'include',
     ids: new Set(),
@@ -232,9 +233,9 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
           label={`${rows.length} membres`}
           size="small"
           sx={{
-            backgroundColor: getBadgeColors('#6B7280').bg,
-            border: `1px solid ${getBadgeColors('#6B7280').border}`,
-            color: getBadgeColors('#6B7280').text,
+            backgroundColor: neutralBadge.bg,
+            border: `1px solid ${neutralBadge.border}`,
+            color: neutralBadge.text,
           }}
         />
         <StatusTag status="actif" color={colors.actif} label={`${stats.actifs} actif·ve·s`} />

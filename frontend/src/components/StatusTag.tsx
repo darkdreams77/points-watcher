@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTheme } from '@mui/material/styles';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import PauseCircleOutlineIcon from '@mui/icons-material/PauseCircleOutline';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
@@ -27,7 +28,8 @@ interface Props {
 }
 
 export const StatusTag: React.FC<Props> = ({ status, color, label }) => {
-  const { bg, border, text } = getBadgeColors(color);
+  const theme = useTheme();
+  const { bg, border, text } = getBadgeColors(color, theme.palette.mode);
 
   return (
     <span

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTheme } from '@mui/material/styles';
 import { getBadgeColors } from '../helpers/badgeStyle';
 
 interface Props {
@@ -7,7 +8,8 @@ interface Props {
 }
 
 export const GroupTag: React.FC<Props> = ({ name, color }) => {
-  const { bg, border, text } = getBadgeColors(color);
+  const theme = useTheme();
+  const { bg, border, text } = getBadgeColors(color, theme.palette.mode);
 
   return (
     <span

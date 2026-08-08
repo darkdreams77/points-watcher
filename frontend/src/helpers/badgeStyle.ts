@@ -60,8 +60,25 @@ export interface BadgeColors {
   text: string;
 }
 
-export function getBadgeColors(hex: string): BadgeColors {
+// En clair : pastille pastel (fond très clair, texte foncé saturé) — se
+// fond dans une page claire. En sombre, le même traitement produit des
+// autocollants clairs qui jurent sur le fond ; on inverse donc la
+// direction du clamp de luminosité (fond sombre teinté, texte clair
+// saturé) pour que le badge s'intègre à la surface sombre.
+export function getBadgeColors(hex: string, mode: 'light' | 'dark' = 'light'): BadgeColors {
   const { h, s } = hexToHsl(hex);
+
+  if (mode === 'dark') {
+    const satForBg = Math.min(Math.max(s, 30), 65);
+    const satForText = Math.max(s, 50);
+
+    return {
+      bg: hslToHex(h, satForBg, 22),
+      border: hslToHex(h, satForBg, 40),
+      text: hslToHex(h, satForText, 80),
+    };
+  }
+
   const satForBg = Math.min(s, 65);
   const satForText = Math.max(s, 45);
 
