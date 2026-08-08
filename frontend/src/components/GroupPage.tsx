@@ -92,20 +92,30 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
         headerName: 'Membre',
         ...(isMobile ? { width: 150 } : { flex: 1.5 }),
         sortable: true,
-        renderCell: (params) => (
-          <a
-            href={params.row.profileUrl as string}
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              textDecoration: 'none',
-              color: accentColor,
-              fontWeight: 700,
-            }}
-          >
-            {params.value}
-          </a>
-        ),
+        renderCell: (params) => {
+          const row = params.row as Member;
+          return (
+            <Box sx={{ lineHeight: 1.2, py: 0.5 }}>
+              <a
+                href={row.profileUrl}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  textDecoration: 'none',
+                  color: accentColor,
+                  fontWeight: 700,
+                }}
+              >
+                {params.value}
+              </a>
+              {row.faceClaim && (
+                <Box sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
+                  FC : {row.faceClaim}
+                </Box>
+              )}
+            </Box>
+          );
+        },
       },
       {
         field: 'lastPoints',
@@ -258,6 +268,7 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
               username={row.username}
               profileUrl={row.profileUrl}
               usernameColor={accentColor}
+              faceClaim={row.faceClaim}
               lastPoints={row.lastPoints}
               statusColor={colors[row.status]}
               statusLabel={statusLabel(row.status)}

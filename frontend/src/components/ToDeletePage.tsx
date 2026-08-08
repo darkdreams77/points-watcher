@@ -120,18 +120,25 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
           const color = group ? getGroupColor(group) : '#000000';
 
           return (
-            <a
-              href={row.profileUrl}
-              target="_blank"
-              rel="noreferrer"
-              style={{
-                textDecoration: 'none',
-                color,
-                fontWeight: 500,
-              }}
-            >
-              {params.value}
-            </a>
+            <Box sx={{ lineHeight: 1.2, py: 0.5 }}>
+              <a
+                href={row.profileUrl}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  textDecoration: 'none',
+                  color,
+                  fontWeight: 500,
+                }}
+              >
+                {params.value}
+              </a>
+              {row.faceClaim && (
+                <Box sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
+                  FC : {row.faceClaim}
+                </Box>
+              )}
+            </Box>
           );
         },
       },
@@ -280,6 +287,7 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
                 usernameColor={group ? getGroupColor(group) : '#000000'}
                 groupName={group?.name}
                 groupColor={group ? getGroupColor(group) : undefined}
+                faceClaim={row.faceClaim}
                 lastPoints={row.lastPoints}
                 statusColor={colors[row.status]}
                 statusLabel={statusLabel(row.status)}

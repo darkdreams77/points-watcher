@@ -9,6 +9,7 @@ interface Props {
   usernameColor: string;
   groupName?: string;
   groupColor?: string;
+  faceClaim?: string | null;
   lastPoints: number | null;
   statusColor: string;
   statusLabel: string;
@@ -30,6 +31,7 @@ export const MemberCard: React.FC<Props> = ({
   usernameColor,
   groupName,
   groupColor,
+  faceClaim,
   lastPoints,
   statusColor,
   statusLabel,
@@ -90,6 +92,11 @@ export const MemberCard: React.FC<Props> = ({
           >
             {username}
           </Typography>
+          {faceClaim && (
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+              FC : {faceClaim}
+            </Typography>
+          )}
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mt: 0.5 }}>
             <span

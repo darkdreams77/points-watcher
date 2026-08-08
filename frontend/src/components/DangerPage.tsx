@@ -11,6 +11,8 @@ import { computeStatus, type ComputedStatus } from '../helpers/status';
 import { StatusMenu } from './StatusMenu';
 import { BulkActionsBar } from './BulkActionsBar';
 import { EditDateAction } from './EditDateAction';
+import { CopyDangerCodeAction } from './CopyDangerCodeAction';
+import { buildDangerCopyText } from '../helpers/dangerCopyText';
 import { MemberCard } from './MemberCard';
 import { formatDateParis, formatDateWithHours } from '../helpers/formatDate';
 import { getStatusColors } from '../theme';
@@ -120,18 +122,25 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
           const color = group ? getGroupColor(group) : '#1976d2';
 
           return (
-            <a
-              href={row.profileUrl}
-              target="_blank"
-              rel="noreferrer"
-              style={{
-                textDecoration: 'none',
-                color,
-                fontWeight: 500,
-              }}
-            >
-              {params.value}
-            </a>
+            <Box sx={{ lineHeight: 1.2, py: 0.5 }}>
+              <a
+                href={row.profileUrl}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  textDecoration: 'none',
+                  color,
+                  fontWeight: 500,
+                }}
+              >
+                {params.value}
+              </a>
+              {row.faceClaim && (
+                <Box sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
+                  FC : {row.faceClaim}
+                </Box>
+              )}
+            </Box>
           );
         },
       },
@@ -248,7 +257,7 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
 
   return (
     <Box sx={{ p: 1 }}>
-      <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+      <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
         <Typography variant="h5" sx={{ fontWeight: 700 }}>
           Membres en danger
         </Typography>
@@ -257,6 +266,16 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
           size="small"
           sx={{ backgroundColor: colors.enDanger, color: '#fff' }}
         />
+        {rows.length > 0 && (
+          <CopyDangerCodeAction
+            label="Copier la liste"
+            text={rows
+              .map((row) =>
+                buildDangerCopyText(row.username, row.faceClaim, row.lastPoints, row.lastChangeAt)
+              )
+              .join('\n\n')}
+          />
+        )}
       </Box>
 
       {isAuthenticated && (
@@ -280,6 +299,7 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
                 usernameColor={group ? getGroupColor(group) : '#1976d2'}
                 groupName={group?.name}
                 groupColor={group ? getGroupColor(group) : undefined}
+                faceClaim={row.faceClaim}
                 lastPoints={row.lastPoints}
                 statusColor={colors[row.status]}
                 statusLabel={statusLabel(row.status)}
