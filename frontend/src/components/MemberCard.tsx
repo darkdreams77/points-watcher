@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Checkbox, Typography } from '@mui/material';
 import { StatusMenu, type ManualStatus } from './StatusMenu';
 import { EditDateAction } from './EditDateAction';
+import { EditAbsenceEndDateAction } from './EditAbsenceEndDateAction';
 import { StatusTag } from './StatusTag';
 import { GroupTag } from './GroupTag';
 import type { ComputedStatus } from '../helpers/status';
@@ -20,11 +21,16 @@ interface Props {
   lastChangeAtRaw: string | null;
   lastScanAtDisplay?: string;
   manualStatus: ManualStatus;
+  absenceEndDateDisplay?: string;
+  absenceEndDateRaw?: string | null;
   isAuthenticated: boolean;
   memberId: string;
   selected?: boolean;
   onSelectChange?: (checked: boolean) => void;
-  onStatusChange: (status: 'absent' | 'toDelete' | null) => void;
+  onStatusChange: (
+    status: 'absent' | 'toDelete' | null,
+    absenceEndDate?: string
+  ) => void;
   onDateSaved: () => void | Promise<void>;
 }
 
@@ -42,6 +48,8 @@ export const MemberCard: React.FC<Props> = ({
   lastChangeAtRaw,
   lastScanAtDisplay,
   manualStatus,
+  absenceEndDateDisplay,
+  absenceEndDateRaw,
   isAuthenticated,
   memberId,
   selected,
@@ -181,6 +189,23 @@ export const MemberCard: React.FC<Props> = ({
           >
             Scan : {lastScanAtDisplay}
           </Typography>
+        )}
+
+        {manualStatus === 'absent' && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+            <Typography variant="caption" color="text.secondary" noWrap>
+              Retour prévu : {absenceEndDateDisplay ?? '-'}
+            </Typography>
+            {isAuthenticated && (
+              <Box onClick={(e) => e.stopPropagation()} sx={{ flexShrink: 0 }}>
+                <EditAbsenceEndDateAction
+                  memberId={memberId}
+                  currentAbsenceEndDate={absenceEndDateRaw ?? null}
+                  onSaved={onDateSaved}
+                />
+              </Box>
+            )}
+          </Box>
         )}
       </Box>
     </Box>

@@ -18,6 +18,7 @@ import { computeStatus, type ComputedStatus } from '../helpers/status';
 import { StatusMenu } from './StatusMenu';
 import { BulkActionsBar } from './BulkActionsBar';
 import { EditDateAction } from './EditDateAction';
+import { EditAbsenceEndDateAction } from './EditAbsenceEndDateAction';
 import { MemberCard } from './MemberCard';
 import { formatDateParis, formatDateWithHours } from '../helpers/formatDate';
 import { getStatusColors } from '../theme';
@@ -57,15 +58,17 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
   }, [refreshMembers]);
 
   const applyBulkStatus = useCallback(
-    async (status: 'absent' | 'toDelete' | null) => {
+    async (status: 'absent' | 'toDelete' | null, absenceEndDate?: string) => {
       const ids = Array.from(selectionModel.ids) as string[];
       try {
-        await Promise.all(ids.map((id) => updateMemberStatus(id, status)));
+        await Promise.all(
+          ids.map((id) => updateMemberStatus(id, status, absenceEndDate))
+        );
         setSelectionModel({ type: 'include', ids: new Set() });
         await refreshMembers();
       } catch (e) {
         if (e instanceof UnauthorizedError)
-          showAuthModal(() => applyBulkStatus(status));
+          showAuthModal(() => applyBulkStatus(status, absenceEndDate));
       }
     },
     [selectionModel, refreshMembers, showAuthModal]
@@ -165,6 +168,27 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
         },
       },
       {
+        field: 'absenceEndDate',
+        headerName: "Fin d'absence",
+        ...(isMobile ? { width: 150 } : { flex: 1 }),
+        renderCell: (params) => {
+          const m = params.row as Member;
+          if (m.manualStatus !== 'absent') return <span>-</span>;
+          return (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <span>{formatDateParis(m.absenceEndDate ?? null)}</span>
+              {isAuthenticated && (
+                <EditAbsenceEndDateAction
+                  memberId={m.id}
+                  currentAbsenceEndDate={m.absenceEndDate ?? null}
+                  onSaved={refreshMembers}
+                />
+              )}
+            </Box>
+          );
+        },
+      },
+      {
         field: 'actions',
         headerName: 'Actions',
         sortable: false,
@@ -172,13 +196,16 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
         renderCell: (params) => {
           const m = params.row as Member & { lastChangeAtRaw: string | null };
 
-          const setStatus = async (status: 'absent' | 'toDelete' | null) => {
+          const setStatus = async (
+            status: 'absent' | 'toDelete' | null,
+            absenceEndDate?: string
+          ) => {
             try {
-              await updateMemberStatus(m.id, status);
+              await updateMemberStatus(m.id, status, absenceEndDate);
               await refreshMembers();
             } catch (e) {
               if (e instanceof UnauthorizedError)
-                showAuthModal(() => setStatus(status));
+                showAuthModal(() => setStatus(status, absenceEndDate));
             }
           };
 
@@ -276,6 +303,8 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
               lastChangeAtRaw={row.lastChangeAtRaw}
               lastScanAtDisplay={row.lastScanAt}
               manualStatus={row.manualStatus}
+              absenceEndDateDisplay={formatDateParis(row.absenceEndDate ?? null)}
+              absenceEndDateRaw={row.absenceEndDate}
               isAuthenticated={isAuthenticated}
               selected={selectionModel.ids.has(row.id)}
               onSelectChange={(checked) => {
@@ -286,14 +315,16 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
                   return { type: 'include', ids };
                 });
               }}
-              onStatusChange={async (status) => {
+              onStatusChange={async (status, absenceEndDate) => {
                 try {
-                  await updateMemberStatus(row.id, status);
+                  await updateMemberStatus(row.id, status, absenceEndDate);
                   await refreshMembers();
                 } catch (e) {
                   if (e instanceof UnauthorizedError) {
                     showAuthModal(() =>
-                      updateMemberStatus(row.id, status).then(refreshMembers)
+                      updateMemberStatus(row.id, status, absenceEndDate).then(
+                        refreshMembers
+                      )
                     );
                   }
                 }

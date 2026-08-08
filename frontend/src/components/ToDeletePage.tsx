@@ -78,15 +78,17 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
   }, [groups]);
 
   const applyBulkStatus = useCallback(
-    async (status: 'absent' | 'toDelete' | null) => {
+    async (status: 'absent' | 'toDelete' | null, absenceEndDate?: string) => {
       const ids = Array.from(selectionModel.ids) as string[];
       try {
-        await Promise.all(ids.map((id) => updateMemberStatus(id, status)));
+        await Promise.all(
+          ids.map((id) => updateMemberStatus(id, status, absenceEndDate))
+        );
         setSelectionModel({ type: 'include', ids: new Set() });
         await refresh();
       } catch (e) {
         if (e instanceof UnauthorizedError)
-          showAuthModal(() => applyBulkStatus(status));
+          showAuthModal(() => applyBulkStatus(status, absenceEndDate));
       }
     },
     [selectionModel, refresh, showAuthModal]
@@ -217,13 +219,16 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
         renderCell: (params) => {
           const m = params.row as Member & { lastChangeAtRaw: string | null };
 
-          const setStatus = async (status: 'absent' | 'toDelete' | null) => {
+          const setStatus = async (
+            status: 'absent' | 'toDelete' | null,
+            absenceEndDate?: string
+          ) => {
             try {
-              await updateMemberStatus(m.id, status);
+              await updateMemberStatus(m.id, status, absenceEndDate);
               await refresh();
             } catch (e) {
               if (e instanceof UnauthorizedError)
-                showAuthModal(() => setStatus(status));
+                showAuthModal(() => setStatus(status, absenceEndDate));
             }
           };
 
@@ -305,6 +310,8 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
                 lastChangeAtDisplay={row.lastChangeAt}
                 lastChangeAtRaw={row.lastChangeAtRaw}
                 manualStatus={row.manualStatus}
+                absenceEndDateDisplay={formatDateParis(row.absenceEndDate ?? null)}
+                absenceEndDateRaw={row.absenceEndDate}
                 isAuthenticated={isAuthenticated}
                 selected={selectionModel.ids.has(row.id)}
                 onSelectChange={(checked) => {
@@ -315,14 +322,16 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
                     return { type: 'include', ids };
                   });
                 }}
-                onStatusChange={async (status) => {
+                onStatusChange={async (status, absenceEndDate) => {
                   try {
-                    await updateMemberStatus(row.id, status);
+                    await updateMemberStatus(row.id, status, absenceEndDate);
                     await refresh();
                   } catch (e) {
                     if (e instanceof UnauthorizedError) {
                       showAuthModal(() =>
-                        updateMemberStatus(row.id, status).then(refresh)
+                        updateMemberStatus(row.id, status, absenceEndDate).then(
+                          refresh
+                        )
                       );
                     }
                   }

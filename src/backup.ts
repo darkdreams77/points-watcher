@@ -20,6 +20,7 @@ export async function backupMembers() {
       lastChangeAt: m.lastChangeAt,
       faceClaim: m.faceClaim,
       manualStatus: m.manualStatus,
+      absenceEndDate: m.absenceEndDate,
       groupId: m.groupId,
       // backupAt: laissé vide → DEFAULT now()
     })),

@@ -14,6 +14,7 @@ export interface Member {
   faceClaim?: string | null;
   profileUrl: string;
   manualStatus?: 'absent' | 'toDelete' | null;
+  absenceEndDate?: string | null;
   groupId?: string;
 }
 

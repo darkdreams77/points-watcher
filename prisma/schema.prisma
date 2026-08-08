@@ -31,7 +31,11 @@ model Member {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  manualStatus String? // "absent" ou null
+  manualStatus   String? // "absent", "toDelete" ou null
+  // Date de fin d'absence, saisie/éditable depuis le front quand le
+  // membre est marqué absent. Note libre — aucune logique de statut
+  // automatique n'en dépend.
+  absenceEndDate DateTime?
 }
 
 model MemberBackup {
@@ -41,10 +45,11 @@ model MemberBackup {
   lastPoints   Int?
   lastScanAt   DateTime?
   lastChangeAt DateTime?
-  faceClaim    String?
-  manualStatus String?
-  groupId      String
-  backupAt     DateTime @default(now())
+  faceClaim      String?
+  manualStatus   String?
+  absenceEndDate DateTime?
+  groupId        String
+  backupAt       DateTime @default(now())
 }
 
 // Un run par (kind, targetDate) — permet au cron de savoir, à chaque

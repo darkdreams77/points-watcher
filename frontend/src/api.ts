@@ -35,13 +35,14 @@ export async function fetchAllMembers(): Promise<MemberWithGroup[]> {
 
 export async function updateMemberStatus(
   memberId: string,
-  status: 'absent' | 'toDelete' | null
+  status: 'absent' | 'toDelete' | null,
+  absenceEndDate?: string
 ) {
   const res = await fetch(`${API_BASE}/members/${memberId}/status`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
-    body: JSON.stringify({ status }),
+    body: JSON.stringify({ status, absenceEndDate }),
   });
   if (res.status === 401) throw new UnauthorizedError();
   if (!res.ok) throw new Error('Erreur de mise à jour du statut');

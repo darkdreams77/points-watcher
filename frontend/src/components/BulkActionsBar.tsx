@@ -1,5 +1,14 @@
-import React from 'react';
-import { Box, Button, Typography } from '@mui/material';
+import React, { useState } from 'react';
+import {
+  Box,
+  Button,
+  Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+} from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import PauseCircleOutlineIcon from '@mui/icons-material/PauseCircleOutline';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
@@ -7,12 +16,21 @@ import CloseIcon from '@mui/icons-material/Close';
 
 interface Props {
   count: number;
-  onApply: (status: 'absent' | 'toDelete' | null) => void;
+  onApply: (status: 'absent' | 'toDelete' | null, absenceEndDate?: string) => void;
   onClear: () => void;
 }
 
 export const BulkActionsBar: React.FC<Props> = ({ count, onApply, onClear }) => {
+  const [absenceDialogOpen, setAbsenceDialogOpen] = useState(false);
+  const [absenceDate, setAbsenceDate] = useState('');
+
   if (count === 0) return null;
+
+  const confirmAbsence = () => {
+    if (!absenceDate) return;
+    setAbsenceDialogOpen(false);
+    onApply('absent', absenceDate);
+  };
 
   return (
     <Box
@@ -42,7 +60,10 @@ export const BulkActionsBar: React.FC<Props> = ({ count, onApply, onClear }) => 
         size="small"
         variant="outlined"
         startIcon={<PauseCircleOutlineIcon />}
-        onClick={() => onApply('absent')}
+        onClick={() => {
+          setAbsenceDate('');
+          setAbsenceDialogOpen(true);
+        }}
       >
         En absence
       </Button>
@@ -58,6 +79,31 @@ export const BulkActionsBar: React.FC<Props> = ({ count, onApply, onClear }) => 
       <Button size="small" startIcon={<CloseIcon />} onClick={onClear}>
         Annuler
       </Button>
+
+      <Dialog
+        open={absenceDialogOpen}
+        onClose={() => setAbsenceDialogOpen(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Date de fin d'absence</DialogTitle>
+        <DialogContent>
+          <TextField
+            type="date"
+            fullWidth
+            value={absenceDate}
+            onChange={(e) => setAbsenceDate(e.target.value)}
+            sx={{ mt: 1 }}
+            slotProps={{ inputLabel: { shrink: true } }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAbsenceDialogOpen(false)}>Annuler</Button>
+          <Button variant="contained" disabled={!absenceDate} onClick={confirmAbsence}>
+            Confirmer
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

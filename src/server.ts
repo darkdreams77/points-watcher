@@ -118,6 +118,7 @@ app.get('/groups/:id/members', async (req, res) => {
         faceClaim: m.faceClaim,
         profileUrl: m.profileUrl,
         manualStatus: m.manualStatus,
+        absenceEndDate: m.absenceEndDate,
       }))
     );
   } catch (e) {
@@ -126,17 +127,38 @@ app.get('/groups/:id/members', async (req, res) => {
   }
 });
 
+function normalizeToUtcMidnight(value: string): Date | null {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return new Date(
+    Date.UTC(parsed.getUTCFullYear(), parsed.getUTCMonth(), parsed.getUTCDate())
+  );
+}
+
 app.patch('/members/:id/status', requireAuth, async (req, res) => {
   const id = req.params.id as string;
-  const { status } = req.body as { status: 'absent' | 'toDelete' | null };
+  const { status, absenceEndDate } = req.body as {
+    status: 'absent' | 'toDelete' | null;
+    absenceEndDate?: string | null;
+  };
 
   if (status !== 'absent' && status !== 'toDelete' && status !== null)
     return res.status(400).json({ error: 'Status invalide' });
+
+  let normalizedAbsenceEndDate: Date | null = null;
+  if (status === 'absent') {
+    if (!absenceEndDate)
+      return res.status(400).json({ error: 'Date de fin d’absence requise' });
+    normalizedAbsenceEndDate = normalizeToUtcMidnight(absenceEndDate);
+    if (!normalizedAbsenceEndDate)
+      return res.status(400).json({ error: 'Date de fin d’absence invalide' });
+  }
 
   const member = await db.member.update({
     where: { id },
     data: {
       manualStatus: status,
+      absenceEndDate: normalizedAbsenceEndDate,
     },
   });
 
@@ -147,15 +169,10 @@ app.patch('/members/:id/last-change-at', requireAuth, async (req, res) => {
   const id = req.params.id as string;
   const { lastChangeAt } = req.body as { lastChangeAt?: string };
 
-  const parsed = lastChangeAt ? new Date(lastChangeAt) : null;
-  if (!parsed || Number.isNaN(parsed.getTime())) {
+  const normalized = lastChangeAt ? normalizeToUtcMidnight(lastChangeAt) : null;
+  if (!normalized) {
     return res.status(400).json({ error: 'Date invalide' });
   }
-
-  // Aligné sur le comportement du scraper : minuit UTC du jour donné.
-  const normalized = new Date(
-    Date.UTC(parsed.getUTCFullYear(), parsed.getUTCMonth(), parsed.getUTCDate())
-  );
 
   const member = await db.member.update({
     where: { id },
@@ -181,6 +198,7 @@ app.get('/members', async (_req, res) => {
     lastChangeAt: m.lastChangeAt,
     faceClaim: m.faceClaim,
     manualStatus: m.manualStatus,
+    absenceEndDate: m.absenceEndDate,
     profileUrl: m.profileUrl,
     groupId: m.groupId,
     groupName: m.group.name,
