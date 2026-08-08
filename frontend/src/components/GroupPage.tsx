@@ -9,23 +9,11 @@ import { computeStatus } from '../helpers/status';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import PauseCircleOutlineIcon from '@mui/icons-material/PauseCircleOutline';
 import PlayCircleOutlinedIcon from '@mui/icons-material/PlayCircleOutlined';
-import { formatDateWithHours } from '../helpers/formatDate';
+import { formatDateParis, formatDateWithHours } from '../helpers/formatDate';
 import { useIsMobile } from '../hooks/useIsMobile';
 
 interface Props {
   group: Group;
-}
-
-function formatDate(value: string | null) {
-  if (!value) return '-';
-
-  const date = new Date(value);
-
-  return date.toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
 }
 
 export const GroupPage: React.FC<Props> = ({ group }) => {
@@ -55,7 +43,7 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
     const { id, lastChangeAt, lastScanAt, ...rest } = m;
     return {
       id,
-      lastChangeAt: formatDate(lastChangeAt),
+      lastChangeAt: formatDateParis(lastChangeAt),
       lastScanAt: formatDateWithHours(lastScanAt),
       status: computeStatus(m),
       ...rest,
