@@ -66,7 +66,7 @@ app.post('/auth', (req, res) => {
 });
 
 // Liste des groupes
-app.get('/groups', async (_req, res) => {
+app.get('/groups', requireAuth, async (_req, res) => {
   try {
     const groups = await db.group.findMany({
       orderBy: { name: 'asc' },
@@ -86,8 +86,8 @@ app.get('/groups', async (_req, res) => {
 });
 
 // Membres d’un groupe
-app.get('/groups/:id/members', async (req, res) => {
-  const { id } = req.params;
+app.get('/groups/:id/members', requireAuth, async (req, res) => {
+  const id = req.params.id as string;
 
   try {
     const group = await db.group.findUnique({ where: { id } });
@@ -135,7 +135,29 @@ app.patch('/members/:id/status', requireAuth, async (req, res) => {
   res.json(member);
 });
 
-app.get('/members', async (_req, res) => {
+app.patch('/members/:id/last-change-at', requireAuth, async (req, res) => {
+  const id = req.params.id as string;
+  const { lastChangeAt } = req.body as { lastChangeAt?: string };
+
+  const parsed = lastChangeAt ? new Date(lastChangeAt) : null;
+  if (!parsed || Number.isNaN(parsed.getTime())) {
+    return res.status(400).json({ error: 'Date invalide' });
+  }
+
+  // Aligné sur le comportement du scraper : minuit UTC du jour donné.
+  const normalized = new Date(
+    Date.UTC(parsed.getUTCFullYear(), parsed.getUTCMonth(), parsed.getUTCDate())
+  );
+
+  const member = await db.member.update({
+    where: { id },
+    data: { lastChangeAt: normalized },
+  });
+
+  res.json(member);
+});
+
+app.get('/members', requireAuth, async (_req, res) => {
   const members = await db.member.findMany({
     include: {
       group: true,
