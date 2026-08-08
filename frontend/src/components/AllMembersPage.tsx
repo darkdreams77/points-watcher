@@ -199,7 +199,11 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
     return allColumns.filter((col) => isAuthenticated || col.field !== 'actions');
   }, [groups, isMobile, colors, isAuthenticated]);
 
-  const rows = members.map((m) => {
+  const sortedMembers = [...members].sort((a, b) =>
+    a.username.localeCompare(b.username, 'fr', { sensitivity: 'base' })
+  );
+
+  const rows = sortedMembers.map((m) => {
     const { id, lastChangeAt, lastScanAt, ...rest } = m;
     return {
       id,

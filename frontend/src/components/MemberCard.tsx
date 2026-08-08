@@ -44,45 +44,54 @@ export const MemberCard: React.FC<Props> = ({
   onStatusChange,
   onDateSaved,
 }) => {
+  const selectable = isAuthenticated && !!onSelectChange;
+
   return (
     <Box
+      onClick={() => {
+        if (selectable) onSelectChange!(!selected);
+      }}
       sx={{
-        p: 1.5,
+        p: 2,
         borderRadius: 2,
         border: '1px solid',
-        borderColor: 'divider',
+        borderColor: selected ? 'primary.main' : 'divider',
         backgroundColor: 'background.paper',
         display: 'flex',
         flexDirection: 'column',
         gap: 1,
+        cursor: selectable ? 'pointer' : 'default',
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5 }}>
-        {isAuthenticated && onSelectChange && (
+        {selectable && (
           <Checkbox
             size="small"
             checked={!!selected}
-            onChange={(e) => onSelectChange(e.target.checked)}
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => onSelectChange!(e.target.checked)}
             sx={{ p: 0.5, mt: -0.5 }}
           />
         )}
 
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-            <Typography
-              component="a"
-              href={profileUrl}
-              target="_blank"
-              rel="noreferrer"
-              sx={{
-                fontWeight: 700,
-                color: usernameColor,
-                textDecoration: 'none',
-                fontSize: '0.95rem',
-              }}
-            >
-              {username}
-            </Typography>
+          <Typography
+            component="a"
+            href={profileUrl}
+            target="_blank"
+            rel="noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            sx={{
+              fontWeight: 700,
+              color: usernameColor,
+              textDecoration: 'none',
+              fontSize: '0.95rem',
+            }}
+          >
+            {username}
+          </Typography>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mt: 0.5 }}>
             <span
               style={{
                 backgroundColor: statusColor,
@@ -95,24 +104,21 @@ export const MemberCard: React.FC<Props> = ({
             >
               {statusLabel}
             </span>
+            {groupName && (
+              <span
+                style={{
+                  backgroundColor: groupColor,
+                  color: '#fff',
+                  borderRadius: 999,
+                  padding: '1px 8px',
+                  fontSize: '0.7rem',
+                  fontWeight: 500,
+                }}
+              >
+                {groupName}
+              </span>
+            )}
           </Box>
-
-          {groupName && (
-            <span
-              style={{
-                display: 'inline-block',
-                marginTop: 4,
-                backgroundColor: groupColor,
-                color: '#fff',
-                borderRadius: 999,
-                padding: '1px 8px',
-                fontSize: '0.7rem',
-                fontWeight: 500,
-              }}
-            >
-              {groupName}
-            </span>
-          )}
         </Box>
 
         <Typography variant="body2" sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>
@@ -137,11 +143,13 @@ export const MemberCard: React.FC<Props> = ({
             RP : {lastChangeAtDisplay}
           </Typography>
           {isAuthenticated && (
-            <EditDateAction
-              memberId={memberId}
-              currentLastChangeAt={lastChangeAtRaw}
-              onSaved={onDateSaved}
-            />
+            <Box onClick={(e) => e.stopPropagation()}>
+              <EditDateAction
+                memberId={memberId}
+                currentLastChangeAt={lastChangeAtRaw}
+                onSaved={onDateSaved}
+              />
+            </Box>
           )}
         </Box>
 
@@ -152,7 +160,9 @@ export const MemberCard: React.FC<Props> = ({
         )}
 
         {isAuthenticated && (
-          <StatusMenu status={manualStatus} onChange={onStatusChange} compact />
+          <Box onClick={(e) => e.stopPropagation()}>
+            <StatusMenu status={manualStatus} onChange={onStatusChange} />
+          </Box>
         )}
       </Box>
     </Box>

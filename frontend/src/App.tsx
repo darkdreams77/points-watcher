@@ -112,7 +112,7 @@ const AppLayout: React.FC = () => {
           sx={{
             flexGrow: 1,
             minWidth: 0,
-            p: { xs: 1, sm: 3 },
+            p: { xs: 2, sm: 3 },
           }}
         >
           <Toolbar />

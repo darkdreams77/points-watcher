@@ -69,7 +69,11 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
     [selectionModel, refreshMembers, showAuthModal]
   );
 
-  const rows = members.map((m) => {
+  const sortedMembers = [...members].sort((a, b) =>
+    a.username.localeCompare(b.username, 'fr', { sensitivity: 'base' })
+  );
+
+  const rows = sortedMembers.map((m) => {
     const { id, lastChangeAt, lastScanAt, ...rest } = m;
     return {
       id,
