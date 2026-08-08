@@ -98,7 +98,16 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
                 {params.value}
               </a>
               {row.faceClaim && (
-                <Box sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
+                <Box
+                  sx={{
+                    fontSize: '0.7rem',
+                    color: 'text.secondary',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                  }}
+                >
                   {row.faceClaim}
                 </Box>
               )}
@@ -238,10 +247,26 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
             color: neutralBadge.text,
           }}
         />
-        <StatusTag status="actif" color={colors.actif} label={`${stats.actifs} actif·ve·s`} />
-        <StatusTag status="absent" color={colors.absent} label={`${stats.absents} absent·e·s`} />
-        <StatusTag status="enDanger" color={colors.enDanger} label={`${stats.enDanger} en danger`} />
-        <StatusTag status="toDelete" color={colors.toDelete} label={`${stats.inactifs} à supprimer`} />
+        <StatusTag
+          status="actif"
+          color={colors.actif}
+          label={`${stats.actifs} actif·ve·s`}
+        />
+        <StatusTag
+          status="absent"
+          color={colors.absent}
+          label={`${stats.absents} absent·e·s`}
+        />
+        <StatusTag
+          status="enDanger"
+          color={colors.enDanger}
+          label={`${stats.enDanger} en danger`}
+        />
+        <StatusTag
+          status="toDelete"
+          color={colors.toDelete}
+          label={`${stats.inactifs} à supprimer`}
+        />
       </Box>
 
       {isAuthenticated && (

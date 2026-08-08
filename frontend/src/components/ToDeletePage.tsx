@@ -137,7 +137,16 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
                 {params.value}
               </a>
               {row.faceClaim && (
-                <Box sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
+                <Box
+                  sx={{
+                    fontSize: '0.7rem',
+                    color: 'text.secondary',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                  }}
+                >
                   {row.faceClaim}
                 </Box>
               )}
@@ -236,7 +245,15 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
 
   return (
     <Box sx={{ p: 1 }}>
-      <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+      <Box
+        sx={{
+          mb: 2,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2,
+          flexWrap: 'wrap',
+        }}
+      >
         <Typography variant="h5" sx={{ fontWeight: 700 }}>
           Membres à supprimer
         </Typography>
@@ -248,7 +265,9 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
         {rows.length > 0 && (
           <CopyDangerCodeAction
             label="Copier la liste"
-            text={rows.map((row) => buildToDeleteCopyText(row.username, row.faceClaim)).join('\n')}
+            text={rows
+              .map((row) => buildToDeleteCopyText(row.username, row.faceClaim))
+              .join('\n')}
           />
         )}
       </Box>

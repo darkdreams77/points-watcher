@@ -137,7 +137,16 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
                 {params.value}
               </a>
               {row.faceClaim && (
-                <Box sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
+                <Box
+                  sx={{
+                    fontSize: '0.7rem',
+                    color: 'text.secondary',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                  }}
+                >
                   {row.faceClaim}
                 </Box>
               )}
