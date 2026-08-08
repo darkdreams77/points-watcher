@@ -18,6 +18,7 @@ import { getGroupColor } from '../helpers/groupColors';
 import { formatDateParis, formatDateWithHours } from '../helpers/formatDate';
 import { computeStatus, type ComputedStatus } from '../helpers/status';
 import { getStatusColors } from '../theme';
+import { getContrastText } from '../helpers/contrastColor';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { StatusMenu } from './StatusMenu';
 import { BulkActionsBar } from './BulkActionsBar';
@@ -170,7 +171,7 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
               size="small"
               sx={{
                 backgroundColor: color,
-                color: '#fff',
+                color: getContrastText(color),
                 height: 24,
               }}
             />
@@ -196,7 +197,7 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
             <span
               style={{
                 backgroundColor: config.bg,
-                color: '#fff',
+                color: getContrastText(config.bg),
                 borderRadius: 999,
                 padding: '2px 8px',
                 fontSize: '0.75rem',
@@ -276,7 +277,7 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
         <Chip
           label={`${rows.length} membre${rows.length > 1 ? 's' : ''}`}
           size="small"
-          sx={{ backgroundColor: colors.toDelete, color: '#fff' }}
+          sx={{ backgroundColor: colors.toDelete, color: getContrastText(colors.toDelete) }}
         />
         {rows.length > 0 && (
           <CopyDangerCodeAction

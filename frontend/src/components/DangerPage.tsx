@@ -24,6 +24,7 @@ import { buildDangerCopyText } from '../helpers/dangerCopyText';
 import { MemberCard } from './MemberCard';
 import { formatDateParis, formatDateWithHours } from '../helpers/formatDate';
 import { getStatusColors } from '../theme';
+import { getContrastText } from '../helpers/contrastColor';
 import { useIsMobile } from '../hooks/useIsMobile';
 
 function statusLabel(status: ComputedStatus): string {
@@ -170,7 +171,7 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
               size="small"
               sx={{
                 backgroundColor: color,
-                color: '#fff',
+                color: getContrastText(color),
                 height: 24,
               }}
             />
@@ -196,7 +197,7 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
             <span
               style={{
                 backgroundColor: config.bg,
-                color: '#fff',
+                color: getContrastText(config.bg),
                 borderRadius: 999,
                 padding: '2px 8px',
                 fontSize: '0.75rem',
@@ -284,7 +285,7 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
         <Chip
           label={`${rows.length} membre${rows.length > 1 ? 's' : ''}`}
           size="small"
-          sx={{ backgroundColor: colors.enDanger, color: '#fff' }}
+          sx={{ backgroundColor: colors.enDanger, color: getContrastText(colors.enDanger) }}
         />
         {rows.length > 0 && (
           <CopyDangerCodeAction

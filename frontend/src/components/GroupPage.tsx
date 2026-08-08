@@ -21,6 +21,7 @@ import { EditDateAction } from './EditDateAction';
 import { MemberCard } from './MemberCard';
 import { formatDateParis, formatDateWithHours } from '../helpers/formatDate';
 import { getStatusColors } from '../theme';
+import { getContrastText } from '../helpers/contrastColor';
 import { useIsMobile } from '../hooks/useIsMobile';
 
 function statusLabel(status: ComputedStatus): string {
@@ -145,7 +146,7 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
             <span
               style={{
                 backgroundColor: config.bg,
-                color: '#fff',
+                color: getContrastText(config.bg),
                 borderRadius: 999,
                 padding: '2px 8px',
                 fontSize: '0.75rem',
@@ -243,23 +244,23 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
           size="small"
           sx={{
             backgroundColor: accentColor,
-            color: '#fff',
+            color: getContrastText(accentColor),
           }}
         />
         <Chip
           label={`${stats.actifs} actif·s`}
           size="small"
-          sx={{ backgroundColor: colors.actif, color: '#fff' }}
+          sx={{ backgroundColor: colors.actif, color: getContrastText(colors.actif) }}
         />
         <Chip
           label={`${stats.absents} absent·e${stats.absents > 1 ? 's' : ''}`}
           size="small"
-          sx={{ backgroundColor: colors.absent, color: '#fff' }}
+          sx={{ backgroundColor: colors.absent, color: getContrastText(colors.absent) }}
         />
         <Chip
           label={`${stats.enDanger} en danger`}
           size="small"
-          sx={{ backgroundColor: colors.enDanger, color: '#fff' }}
+          sx={{ backgroundColor: colors.enDanger, color: getContrastText(colors.enDanger) }}
         />
       </Box>
 

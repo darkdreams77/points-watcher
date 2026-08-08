@@ -13,6 +13,7 @@ import { getGroupColor } from '../helpers/groupColors';
 import { formatDateParis } from '../helpers/formatDate';
 import { computeStatus, type ComputedStatus } from '../helpers/status';
 import { getStatusColors } from '../theme';
+import { getContrastText } from '../helpers/contrastColor';
 import { StatusMenu } from './StatusMenu';
 import { BulkActionsBar } from './BulkActionsBar';
 import { EditDateAction } from './EditDateAction';
@@ -129,7 +130,7 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
               size="small"
               sx={{
                 backgroundColor: color,
-                color: '#fff',
+                color: getContrastText(color),
                 height: 24,
               }}
             />
@@ -155,7 +156,7 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
             <span
               style={{
                 backgroundColor: config.bg,
-                color: '#fff',
+                color: getContrastText(config.bg),
                 borderRadius: 999,
                 padding: '2px 8px',
                 fontSize: '0.75rem',
@@ -268,22 +269,22 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
         <Chip
           label={`${stats.actifs} actif·ve·s`}
           size="small"
-          sx={{ backgroundColor: colors.actif, color: '#fff' }}
+          sx={{ backgroundColor: colors.actif, color: getContrastText(colors.actif) }}
         />
         <Chip
           label={`${stats.absents} absent·e·s`}
           size="small"
-          sx={{ backgroundColor: colors.absent, color: '#fff' }}
+          sx={{ backgroundColor: colors.absent, color: getContrastText(colors.absent) }}
         />
         <Chip
           label={`${stats.enDanger} en danger`}
           size="small"
-          sx={{ backgroundColor: colors.enDanger, color: '#fff' }}
+          sx={{ backgroundColor: colors.enDanger, color: getContrastText(colors.enDanger) }}
         />
         <Chip
           label={`${stats.inactifs} à supprimer`}
           size="small"
-          sx={{ backgroundColor: colors.toDelete, color: '#fff' }}
+          sx={{ backgroundColor: colors.toDelete, color: getContrastText(colors.toDelete) }}
         />
       </Box>
 

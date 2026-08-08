@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Checkbox, Typography } from '@mui/material';
 import { StatusMenu, type ManualStatus } from './StatusMenu';
 import { EditDateAction } from './EditDateAction';
+import { getContrastText } from '../helpers/contrastColor';
 
 interface Props {
   username: string;
@@ -114,7 +115,7 @@ export const MemberCard: React.FC<Props> = ({
             <span
               style={{
                 backgroundColor: statusColor,
-                color: '#fff',
+                color: getContrastText(statusColor),
                 borderRadius: 999,
                 padding: '1px 8px',
                 fontSize: '0.7rem',
@@ -123,11 +124,11 @@ export const MemberCard: React.FC<Props> = ({
             >
               {statusLabel}
             </span>
-            {groupName && (
+            {groupName && groupColor && (
               <span
                 style={{
                   backgroundColor: groupColor,
-                  color: '#fff',
+                  color: getContrastText(groupColor),
                   borderRadius: 999,
                   padding: '1px 8px',
                   fontSize: '0.7rem',
