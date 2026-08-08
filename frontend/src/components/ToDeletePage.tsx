@@ -1,6 +1,7 @@
 // src/ToDeletePage.tsx
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Box, Chip, Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { DataGrid, type GridColDef, type GridRowSelectionModel } from '@mui/x-data-grid';
 import type { Group, Member } from '../types';
 import { fetchGroupMembers, updateMemberStatus, UnauthorizedError } from '../api';
@@ -8,6 +9,7 @@ import { useAuth } from '../auth-context';
 import { getGroupColor } from '../helpers/groupColors';
 import { formatDateParis, formatDateWithHours } from '../helpers/formatDate';
 import { computeStatus } from '../helpers/status';
+import { getStatusColors } from '../theme';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { StatusMenu } from './StatusMenu';
 import { BulkActionsBar } from './BulkActionsBar';
@@ -26,6 +28,8 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
   const [loading, setLoading] = useState(true);
   const isMobile = useIsMobile();
   const { showAuthModal } = useAuth();
+  const theme = useTheme();
+  const colors = getStatusColors(theme.palette.mode);
   const [selectionModel, setSelectionModel] = useState<GridRowSelectionModel>({
     type: 'include',
     ids: new Set(),
@@ -164,14 +168,15 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
             | 'absent'
             | 'toDelete';
 
-          const config =
+          const label =
             status === 'actif'
-              ? { label: 'Actif·ve', bg: '#4CAF50' }
+              ? 'Actif·ve'
               : status === 'enDanger'
-              ? { label: 'En danger', bg: '#F44336' }
+              ? 'En danger'
               : status === 'absent'
-              ? { label: 'Absent·e', bg: '#9E9E9E' }
-              : { label: 'Inactif·ve', bg: '#000000' };
+              ? 'Absent·e'
+              : 'Inactif·ve';
+          const config = { label, bg: colors[status] };
 
           return (
             <span
@@ -198,7 +203,7 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
         field: 'actions',
         headerName: 'Actions',
         sortable: false,
-        ...(isMobile ? { width: 100 } : { flex: 0.8 }),
+        ...(isMobile ? { width: 120 } : { flex: 0.8 }),
         renderCell: (params) => {
           const m = params.row as Member & { lastChangeAtRaw: string | null };
 
@@ -213,7 +218,7 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
 
           return (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <StatusMenu status={m.manualStatus} onChange={setStatus} />
+              <StatusMenu status={m.manualStatus} onChange={setStatus} compact={isMobile} />
               <EditDateAction
                 memberId={m.id}
                 currentLastChangeAt={m.lastChangeAtRaw}
@@ -224,7 +229,7 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
         },
       },
     ],
-    [groups]
+    [groups, isMobile, colors]
   );
 
   const rows = sorted.map((m) => {
@@ -248,7 +253,7 @@ export const ToDeletePage: React.FC<Props> = ({ groups }) => {
         <Chip
           label={`${rows.length} membre${rows.length > 1 ? 's' : ''}`}
           size="small"
-          sx={{ backgroundColor: '#000000', color: '#fff' }}
+          sx={{ backgroundColor: colors.toDelete, color: '#fff' }}
         />
       </Box>
 

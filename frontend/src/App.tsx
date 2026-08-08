@@ -1,55 +1,30 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { fetchGroups, UnauthorizedError } from './api';
 import type { Group } from './types';
 import { GroupPage } from './components/GroupPage';
-import {
-  CssBaseline,
-  Box,
-  Toolbar,
-  AppBar,
-  Typography,
-  IconButton,
-} from '@mui/material';
+import { Box, Toolbar, AppBar, Typography, IconButton, Tooltip } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
 import { Sidebar } from './components/Sidebar';
 import { DangerPage } from './components/DangerPage';
 import { AllMembersPage } from './components/AllMembersPage';
 import { ToDeletePage } from './components/ToDeletePage';
 import { useIsMobile } from './hooks/useIsMobile';
 import { AuthProvider, useAuth } from './auth-context';
+import { ThemeModeProvider, useThemeMode } from './theme-context';
 
 const AppLayout: React.FC = () => {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [unauthorized, setUnauthorized] = useState(false);
   const { showAuthModal } = useAuth();
+  const { mode, toggleMode } = useThemeMode();
 
   const isMobile = useIsMobile();
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(isMobile);
-
-  const darkTheme = createTheme({
-    palette: {
-      mode: 'dark',
-    },
-    typography: {
-      fontFamily: [
-        'Work Sans',
-        '-apple-system',
-        'BlinkMacSystemFont',
-        '"Segoe UI"',
-        'Roboto',
-        '"Helvetica Neue"',
-        'Arial',
-        'sans-serif',
-        '"Apple Color Emoji"',
-        '"Segoe UI Emoji"',
-        '"Segoe UI Symbol"',
-      ].join(','),
-    },
-  });
 
   const loadGroups = useCallback(() => {
     setLoading(true);
@@ -80,36 +55,41 @@ const AppLayout: React.FC = () => {
     return <div style={{ padding: 16 }}>Aucun groupe trouvé.</div>;
 
   return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      <Box sx={{ display: 'flex' }}>
-        <AppBar
-          position="fixed"
-          sx={{
-            zIndex: 1201,
-            flexDirection: 'row',
-            justifyContent: 'flex-start',
-            gap: '5px',
-            paddingLeft: '30px',
-          }}
+    <Box sx={{ display: 'flex' }}>
+      <AppBar
+        position="fixed"
+        sx={{
+          zIndex: 1201,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          gap: '5px',
+          paddingLeft: '30px',
+        }}
+      >
+        <IconButton
+          color="inherit"
+          edge="start"
+          onClick={() => setIsDrawerOpen((prev) => !prev)}
+          sx={{ flex: '0 0 70px' }}
         >
-          <IconButton
-            color="inherit"
-            edge="start"
-            onClick={() => setIsDrawerOpen((prev) => !prev)}
-            sx={{ flex: '0 0 70px' }}
-          >
-            <MenuIcon />
+          <MenuIcon />
+        </IconButton>
+
+        <Toolbar sx={{ flexGrow: 1 }}>
+          <Typography variant="h6" noWrap component="div">
+            ILH – Suivi des RPs
+          </Typography>
+        </Toolbar>
+
+        <Tooltip title={mode === 'dark' ? 'Passer en clair' : 'Passer en sombre'}>
+          <IconButton color="inherit" onClick={toggleMode} sx={{ mr: 1 }}>
+            {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
           </IconButton>
+        </Tooltip>
+      </AppBar>
 
-          <Toolbar>
-            <Typography variant="h6" noWrap component="div">
-              ILH – Suivi des RPs
-            </Typography>
-          </Toolbar>
-        </AppBar>
-
-        <Sidebar
+      <Sidebar
           groups={groups}
           isMobile={isMobile}
           isDrawerOpen={isDrawerOpen}
@@ -143,7 +123,6 @@ const AppLayout: React.FC = () => {
           </Routes>
         </Box>
       </Box>
-    </ThemeProvider>
   );
 };
 
@@ -155,9 +134,11 @@ const GroupPageWrapper: React.FC<{ groups: Group[] }> = ({ groups }) => {
 };
 
 const App: React.FC = () => (
-  <AuthProvider>
-    <AppLayout />
-  </AuthProvider>
+  <ThemeModeProvider>
+    <AuthProvider>
+      <AppLayout />
+    </AuthProvider>
+  </ThemeModeProvider>
 );
 
 export default App;

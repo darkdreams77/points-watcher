@@ -5,11 +5,13 @@ import { useAuth } from '../auth-context';
 import { getGroupColor } from '../helpers/groupColors';
 import { DataGrid, type GridColDef, type GridRowSelectionModel } from '@mui/x-data-grid';
 import { Box, Typography, Chip } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { computeStatus } from '../helpers/status';
 import { StatusMenu } from './StatusMenu';
 import { BulkActionsBar } from './BulkActionsBar';
 import { EditDateAction } from './EditDateAction';
 import { formatDateParis, formatDateWithHours } from '../helpers/formatDate';
+import { getStatusColors } from '../theme';
 import { useIsMobile } from '../hooks/useIsMobile';
 
 interface Props {
@@ -22,6 +24,8 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
   const accentColor = getGroupColor(group);
   const isMobile = useIsMobile();
   const { showAuthModal } = useAuth();
+  const theme = useTheme();
+  const colors = getStatusColors(theme.palette.mode);
   const [selectionModel, setSelectionModel] = useState<GridRowSelectionModel>({
     type: 'include',
     ids: new Set(),
@@ -105,14 +109,15 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
         renderCell: (params) => {
           const status = params.value;
 
-          const config =
+          const label =
             status === 'actif'
-              ? { label: 'Actif·ve', bg: '#4CAF50' }
+              ? 'Actif·ve'
               : status === 'enDanger'
-              ? { label: 'En danger', bg: '#F44336' }
+              ? 'En danger'
               : status === 'absent'
-              ? { label: 'Absent·e', bg: '#636363' }
-              : { label: 'Inactif·ve', bg: '#000000' };
+              ? 'Absent·e'
+              : 'Inactif·ve';
+          const config = { label, bg: colors[status as keyof typeof colors] };
 
           return (
             <span
@@ -139,7 +144,7 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
         field: 'actions',
         headerName: 'Actions',
         sortable: false,
-        ...(isMobile ? { width: 100 } : { flex: 0.8 }),
+        ...(isMobile ? { width: 120 } : { flex: 0.8 }),
         renderCell: (params) => {
           const m = params.row as Member & { lastChangeAtRaw: string | null };
 
@@ -154,7 +159,7 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
 
           return (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <StatusMenu status={m.manualStatus} onChange={setStatus} />
+              <StatusMenu status={m.manualStatus} onChange={setStatus} compact={isMobile} />
               <EditDateAction
                 memberId={m.id}
                 currentLastChangeAt={m.lastChangeAtRaw}
@@ -170,7 +175,7 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
         ...(isMobile ? { width: 160 } : { flex: 1 }),
       },
     ],
-    [accentColor]
+    [accentColor, isMobile, colors]
   );
 
   const stats = useMemo(() => {
@@ -213,17 +218,17 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
         <Chip
           label={`${stats.actifs} actif·s`}
           size="small"
-          sx={{ backgroundColor: '#4CAF50', color: '#fff' }}
+          sx={{ backgroundColor: colors.actif, color: '#fff' }}
         />
         <Chip
           label={`${stats.absents} absent·e${stats.absents > 1 ? 's' : ''}`}
           size="small"
-          sx={{ backgroundColor: '#636363', color: '#fff' }}
+          sx={{ backgroundColor: colors.absent, color: '#fff' }}
         />
         <Chip
           label={`${stats.enDanger} en danger`}
           size="small"
-          sx={{ backgroundColor: '#F44336', color: '#fff' }}
+          sx={{ backgroundColor: colors.enDanger, color: '#fff' }}
         />
       </Box>
 

@@ -1,12 +1,14 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { DataGrid, type GridColDef, type GridRowSelectionModel } from '@mui/x-data-grid';
 import { Box, Typography, Chip } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import type { MemberWithGroup, Group, Member } from '../types';
 import { fetchAllMembers, updateMemberStatus, UnauthorizedError } from '../api';
 import { useAuth } from '../auth-context';
 import { getGroupColor } from '../helpers/groupColors';
 import { formatDateParis } from '../helpers/formatDate';
 import { computeStatus } from '../helpers/status';
+import { getStatusColors } from '../theme';
 import { StatusMenu } from './StatusMenu';
 import { BulkActionsBar } from './BulkActionsBar';
 import { EditDateAction } from './EditDateAction';
@@ -21,6 +23,8 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
   const [loading, setLoading] = useState(true);
   const isMobile = useIsMobile();
   const { showAuthModal } = useAuth();
+  const theme = useTheme();
+  const colors = getStatusColors(theme.palette.mode);
   const [selectionModel, setSelectionModel] = useState<GridRowSelectionModel>({
     type: 'include',
     ids: new Set(),
@@ -126,14 +130,15 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
         renderCell: (params) => {
           const row = params.row as MemberWithGroup;
           const status = computeStatus(row);
-          const config =
+          const label =
             status === 'actif'
-              ? { label: 'Actif·ve', bg: '#4CAF50' }
+              ? 'Actif·ve'
               : status === 'enDanger'
-              ? { label: 'En danger', bg: '#F44336' }
+              ? 'En danger'
               : status === 'absent'
-              ? { label: 'Absent·e', bg: '#636363' }
-              : { label: 'Inactif·ve', bg: '#000000' };
+              ? 'Absent·e'
+              : 'Inactif·ve';
+          const config = { label, bg: colors[status] };
 
           return (
             <span
@@ -160,7 +165,7 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
         field: 'actions',
         headerName: 'Actions',
         sortable: false,
-        ...(isMobile ? { width: 100 } : { flex: 0.8 }),
+        ...(isMobile ? { width: 120 } : { flex: 0.8 }),
         renderCell: (params) => {
           const m = params.row as Member & { lastChangeAtRaw: string | null };
 
@@ -175,7 +180,7 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
 
           return (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <StatusMenu status={m.manualStatus} onChange={setStatus} />
+              <StatusMenu status={m.manualStatus} onChange={setStatus} compact={isMobile} />
               <EditDateAction
                 memberId={m.id}
                 currentLastChangeAt={m.lastChangeAtRaw}
@@ -186,7 +191,7 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
         },
       },
     ],
-    [groups]
+    [groups, isMobile, colors]
   );
 
   const rows = members.map((m) => {
@@ -239,22 +244,22 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
         <Chip
           label={`${stats.actifs} actif·ve·s`}
           size="small"
-          sx={{ backgroundColor: '#4CAF50', color: '#fff' }}
+          sx={{ backgroundColor: colors.actif, color: '#fff' }}
         />
         <Chip
           label={`${stats.absents} absent·e·s`}
           size="small"
-          sx={{ backgroundColor: '#636363', color: '#fff' }}
+          sx={{ backgroundColor: colors.absent, color: '#fff' }}
         />
         <Chip
           label={`${stats.enDanger} en danger`}
           size="small"
-          sx={{ backgroundColor: '#F44336', color: '#fff' }}
+          sx={{ backgroundColor: colors.enDanger, color: '#fff' }}
         />
         <Chip
           label={`${stats.inactifs} à supprimer`}
           size="small"
-          sx={{ backgroundColor: '#000000', color: '#fff' }}
+          sx={{ backgroundColor: colors.toDelete, color: '#fff' }}
         />
       </Box>
 

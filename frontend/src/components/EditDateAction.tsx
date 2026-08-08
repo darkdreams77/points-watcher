@@ -56,7 +56,7 @@ export const EditDateAction: React.FC<Props> = ({
   return (
     <>
       <Tooltip title="Modifier la date du dernier RP">
-        <IconButton size="small" onClick={handleOpen}>
+        <IconButton size="small" onClick={handleOpen} sx={{ minWidth: 40, minHeight: 40 }}>
           <EditCalendarIcon fontSize="small" />
         </IconButton>
       </Tooltip>
