@@ -7,13 +7,24 @@ import type { Group, Member } from '../types';
 import { fetchGroupMembers, updateMemberStatus, UnauthorizedError } from '../api';
 import { useAuth } from '../auth-context';
 import { getGroupColor } from '../helpers/groupColors';
-import { computeStatus } from '../helpers/status';
+import { computeStatus, type ComputedStatus } from '../helpers/status';
 import { StatusMenu } from './StatusMenu';
 import { BulkActionsBar } from './BulkActionsBar';
 import { EditDateAction } from './EditDateAction';
+import { MemberCard } from './MemberCard';
 import { formatDateParis, formatDateWithHours } from '../helpers/formatDate';
 import { getStatusColors } from '../theme';
 import { useIsMobile } from '../hooks/useIsMobile';
+
+function statusLabel(status: ComputedStatus): string {
+  return status === 'actif'
+    ? 'Actif·ve'
+    : status === 'enDanger'
+    ? 'En danger'
+    : status === 'absent'
+    ? 'Absent·e'
+    : 'Inactif·ve';
+}
 
 interface MemberWithGroup extends Member {
   groupId: string;
@@ -160,21 +171,8 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
         ...(isMobile ? { width: 120 } : { flex: 0.8 }),
         sortable: false,
         renderCell: (params) => {
-          const status = params.value as
-            | 'actif'
-            | 'enDanger'
-            | 'absent'
-            | 'toDelete';
-
-          const label =
-            status === 'actif'
-              ? 'Actif·ve'
-              : status === 'enDanger'
-              ? 'En danger'
-              : status === 'absent'
-              ? 'Absent·e'
-              : 'Inactif·ve';
-          const config = { label, bg: colors[status] };
+          const status = params.value as ComputedStatus;
+          const config = { label: statusLabel(status), bg: colors[status] };
 
           return (
             <span
@@ -269,46 +267,92 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
         />
       )}
 
-      <Box
-        sx={{
-          width: '100%',
-          height: isMobile ? 'auto' : 'calc(100vh - 200px)',
-          overflow: 'hidden',
-        }}
-      >
+      {isMobile ? (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          {rows.map((row) => {
+            const group = groups.find((g) => g.id === row.groupId);
+            return (
+              <MemberCard
+                key={row.id}
+                memberId={row.id}
+                username={row.username}
+                profileUrl={row.profileUrl}
+                usernameColor={group ? getGroupColor(group) : '#1976d2'}
+                groupName={group?.name}
+                groupColor={group ? getGroupColor(group) : undefined}
+                lastPoints={row.lastPoints}
+                statusColor={colors[row.status]}
+                statusLabel={statusLabel(row.status)}
+                lastChangeAtDisplay={row.lastChangeAt}
+                lastChangeAtRaw={row.lastChangeAtRaw}
+                manualStatus={row.manualStatus}
+                isAuthenticated={isAuthenticated}
+                selected={selectionModel.ids.has(row.id)}
+                onSelectChange={(checked) => {
+                  setSelectionModel((prev) => {
+                    const ids = new Set(prev.ids);
+                    if (checked) ids.add(row.id);
+                    else ids.delete(row.id);
+                    return { type: 'include', ids };
+                  });
+                }}
+                onStatusChange={async (status) => {
+                  try {
+                    await updateMemberStatus(row.id, status);
+                    await refresh();
+                  } catch (e) {
+                    if (e instanceof UnauthorizedError) {
+                      showAuthModal(() => updateMemberStatus(row.id, status).then(refresh));
+                    }
+                  }
+                }}
+                onDateSaved={refresh}
+              />
+            );
+          })}
+        </Box>
+      ) : (
         <Box
           sx={{
             width: '100%',
-            height: '100%',
-            overflowX: 'auto',
-            overflowY: 'hidden',
+            height: 'calc(100vh - 200px)',
+            overflow: 'hidden',
           }}
         >
           <Box
             sx={{
-              minWidth: '100%',
+              width: '100%',
               height: '100%',
+              overflowX: 'auto',
+              overflowY: 'hidden',
             }}
           >
-            <DataGrid
-              rows={rows}
-              columns={columns}
-              loading={loading}
-              disableRowSelectionOnClick
-              checkboxSelection={isAuthenticated}
-              rowSelectionModel={selectionModel}
-              onRowSelectionModelChange={setSelectionModel}
-              sortingOrder={['asc', 'desc']}
-              initialState={{
-                sorting: {
-                  sortModel: [{ field: 'username', sort: 'asc' }],
-                },
+            <Box
+              sx={{
+                minWidth: '100%',
+                height: '100%',
               }}
-              pageSizeOptions={[25, 50, 100]}
-            />
+            >
+              <DataGrid
+                rows={rows}
+                columns={columns}
+                loading={loading}
+                disableRowSelectionOnClick
+                checkboxSelection={isAuthenticated}
+                rowSelectionModel={selectionModel}
+                onRowSelectionModelChange={setSelectionModel}
+                sortingOrder={['asc', 'desc']}
+                initialState={{
+                  sorting: {
+                    sortModel: [{ field: 'username', sort: 'asc' }],
+                  },
+                }}
+                pageSizeOptions={[25, 50, 100]}
+              />
+            </Box>
           </Box>
         </Box>
-      </Box>
+      )}
     </Box>
   );
 };

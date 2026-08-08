@@ -12,7 +12,18 @@ import { getStatusColors } from '../theme';
 import { StatusMenu } from './StatusMenu';
 import { BulkActionsBar } from './BulkActionsBar';
 import { EditDateAction } from './EditDateAction';
+import { MemberCard } from './MemberCard';
 import { useIsMobile } from '../hooks/useIsMobile';
+
+function statusLabel(status: ComputedStatus): string {
+  return status === 'actif'
+    ? 'Actif·ve'
+    : status === 'enDanger'
+    ? 'En danger'
+    : status === 'absent'
+    ? 'Absent·e'
+    : 'Inactif·ve';
+}
 
 interface Props {
   groups: Group[];
@@ -126,15 +137,7 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
         sortable: false,
         renderCell: (params) => {
           const status = params.value as ComputedStatus;
-          const label =
-            status === 'actif'
-              ? 'Actif·ve'
-              : status === 'enDanger'
-              ? 'En danger'
-              : status === 'absent'
-              ? 'Absent·e'
-              : 'Inactif·ve';
-          const config = { label, bg: colors[status] };
+          const config = { label: statusLabel(status), bg: colors[status] };
 
           return (
             <span
@@ -273,48 +276,94 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
         />
       )}
 
-      <Box
-        sx={{
-          width: '100%',
-          height: isMobile ? 'auto' : 'calc(100vh - 200px)',
-          overflow: 'hidden',
-        }}
-      >
+      {isMobile ? (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          {rows.map((row) => {
+            const group = groups.find((g) => g.id === row.groupId);
+            return (
+              <MemberCard
+                key={row.id}
+                memberId={row.id}
+                username={row.username}
+                profileUrl={row.profileUrl}
+                usernameColor={group ? getGroupColor(group) : '#000000'}
+                groupName={group?.name}
+                groupColor={group ? getGroupColor(group) : undefined}
+                lastPoints={row.lastPoints}
+                statusColor={colors[row.status]}
+                statusLabel={statusLabel(row.status)}
+                lastChangeAtDisplay={row.lastChangeAt}
+                lastChangeAtRaw={row.lastChangeAtRaw}
+                manualStatus={row.manualStatus}
+                isAuthenticated={isAuthenticated}
+                selected={selectionModel.ids.has(row.id)}
+                onSelectChange={(checked) => {
+                  setSelectionModel((prev) => {
+                    const ids = new Set(prev.ids);
+                    if (checked) ids.add(row.id);
+                    else ids.delete(row.id);
+                    return { type: 'include', ids };
+                  });
+                }}
+                onStatusChange={async (status) => {
+                  try {
+                    await updateMemberStatus(row.id, status);
+                    await refreshMembers();
+                  } catch (e) {
+                    if (e instanceof UnauthorizedError) {
+                      showAuthModal(() => updateMemberStatus(row.id, status).then(refreshMembers));
+                    }
+                  }
+                }}
+                onDateSaved={refreshMembers}
+              />
+            );
+          })}
+        </Box>
+      ) : (
         <Box
           sx={{
             width: '100%',
-            height: '100%',
-            overflowX: 'auto',
-            overflowY: 'hidden',
+            height: 'calc(100vh - 200px)',
+            overflow: 'hidden',
           }}
         >
           <Box
             sx={{
-              minWidth: '100%',
+              width: '100%',
               height: '100%',
+              overflowX: 'auto',
+              overflowY: 'hidden',
             }}
           >
-            <DataGrid
-              key="all-members"
-              rows={rows}
-              columns={columns}
-              loading={loading}
-              disableRowSelectionOnClick
-              checkboxSelection={isAuthenticated}
-              rowSelectionModel={selectionModel}
-              onRowSelectionModelChange={setSelectionModel}
-              sortingOrder={['asc', 'desc']}
-              initialState={{
-                sorting: {
-                  sortModel: [{ field: 'username', sort: 'asc' }],
-                },
+            <Box
+              sx={{
+                minWidth: '100%',
+                height: '100%',
               }}
-              pageSizeOptions={[25, 50, 100]}
-              showToolbar
-            />
+            >
+              <DataGrid
+                key="all-members"
+                rows={rows}
+                columns={columns}
+                loading={loading}
+                disableRowSelectionOnClick
+                checkboxSelection={isAuthenticated}
+                rowSelectionModel={selectionModel}
+                onRowSelectionModelChange={setSelectionModel}
+                sortingOrder={['asc', 'desc']}
+                initialState={{
+                  sorting: {
+                    sortModel: [{ field: 'username', sort: 'asc' }],
+                  },
+                }}
+                pageSizeOptions={[25, 50, 100]}
+                showToolbar
+              />
+            </Box>
           </Box>
         </Box>
-      </Box>
+      )}
     </Box>
   );
 };

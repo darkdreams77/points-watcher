@@ -1,5 +1,6 @@
-import React, { createContext, useCallback, useContext, useRef, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { AuthModal } from './components/AuthModal';
+import { checkAuthStatus } from './api';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -15,6 +16,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const pendingCallbackRef = useRef<(() => void) | undefined>(undefined);
+
+  useEffect(() => {
+    checkAuthStatus().then(setIsAuthenticated);
+  }, []);
 
   const showAuthModal = useCallback((onSuccess?: () => void) => {
     pendingCallbackRef.current = onSuccess;

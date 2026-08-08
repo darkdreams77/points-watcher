@@ -16,6 +16,11 @@ async function get<T>(path: string): Promise<T> {
   return res.json();
 }
 
+export async function checkAuthStatus(): Promise<boolean> {
+  const res = await fetch(`${API_BASE}/auth/status`, { credentials: 'include' });
+  return res.ok;
+}
+
 export async function fetchGroups(): Promise<Group[]> {
   return get<Group[]>('/groups');
 }

@@ -42,6 +42,10 @@ function requireAuth(
   next();
 }
 
+app.get('/auth/status', requireAuth, (_req, res) => {
+  res.json({ authenticated: true });
+});
+
 app.post('/auth', (req, res) => {
   if (!process.env.AUTH_PASSWORD || !process.env.AUTH_SECRET) {
     return res.status(500).json({ error: 'Configuration serveur manquante' });
