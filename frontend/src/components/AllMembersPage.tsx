@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { DataGrid, type GridColDef } from '@mui/x-data-grid';
+import { DataGrid, type GridColDef, type GridRowSelectionModel } from '@mui/x-data-grid';
 import { Box, Typography, Chip } from '@mui/material';
 import type { MemberWithGroup, Group, Member } from '../types';
 import { fetchAllMembers, updateMemberStatus, UnauthorizedError } from '../api';
@@ -8,6 +8,7 @@ import { getGroupColor } from '../helpers/groupColors';
 import { formatDateParis } from '../helpers/formatDate';
 import { computeStatus } from '../helpers/status';
 import { StatusMenu } from './StatusMenu';
+import { BulkActionsBar } from './BulkActionsBar';
 import { useIsMobile } from '../hooks/useIsMobile';
 
 interface Props {
@@ -19,6 +20,10 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
   const [loading, setLoading] = useState(true);
   const isMobile = useIsMobile();
   const { showAuthModal } = useAuth();
+  const [selectionModel, setSelectionModel] = useState<GridRowSelectionModel>({
+    type: 'include',
+    ids: new Set(),
+  });
 
   // 1) Fonction de refresh factorisée
   const refreshMembers = useCallback(() => {
@@ -35,6 +40,20 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
   useEffect(() => {
     refreshMembers();
   }, [refreshMembers]);
+
+  const applyBulkStatus = useCallback(
+    async (status: 'absent' | 'toDelete' | null) => {
+      const ids = Array.from(selectionModel.ids) as string[];
+      try {
+        await Promise.all(ids.map((id) => updateMemberStatus(id, status)));
+        setSelectionModel({ type: 'include', ids: new Set() });
+        await refreshMembers();
+      } catch (e) {
+        if (e instanceof UnauthorizedError) showAuthModal(() => applyBulkStatus(status));
+      }
+    },
+    [selectionModel, refreshMembers, showAuthModal]
+  );
 
   const columns: GridColDef[] = useMemo(
     () => [
@@ -228,6 +247,12 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
         />
       </Box>
 
+      <BulkActionsBar
+        count={selectionModel.ids.size}
+        onApply={applyBulkStatus}
+        onClear={() => setSelectionModel({ type: 'include', ids: new Set() })}
+      />
+
       <Box
         sx={{
           width: '100%',
@@ -255,6 +280,9 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
               columns={columns}
               loading={loading}
               disableRowSelectionOnClick
+              checkboxSelection
+              rowSelectionModel={selectionModel}
+              onRowSelectionModelChange={setSelectionModel}
               sortingOrder={['asc', 'desc']}
               initialState={{
                 sorting: {

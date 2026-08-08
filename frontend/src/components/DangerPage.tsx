@@ -1,13 +1,14 @@
 // src/DangerPage.tsx
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Box, Chip, Typography } from '@mui/material';
-import { DataGrid, type GridColDef } from '@mui/x-data-grid';
+import { DataGrid, type GridColDef, type GridRowSelectionModel } from '@mui/x-data-grid';
 import type { Group, Member } from '../types';
 import { fetchGroupMembers, updateMemberStatus, UnauthorizedError } from '../api';
 import { useAuth } from '../auth-context';
 import { getGroupColor } from '../helpers/groupColors';
 import { computeStatus } from '../helpers/status';
 import { StatusMenu } from './StatusMenu';
+import { BulkActionsBar } from './BulkActionsBar';
 import { formatDateParis, formatDateWithHours } from '../helpers/formatDate';
 import { useIsMobile } from '../hooks/useIsMobile';
 
@@ -24,6 +25,10 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
   const [loading, setLoading] = useState(true);
   const isMobile = useIsMobile();
   const { showAuthModal } = useAuth();
+  const [selectionModel, setSelectionModel] = useState<GridRowSelectionModel>({
+    type: 'include',
+    ids: new Set(),
+  });
 
   const refresh = useCallback(async () => {
     if (!groups.length) return;
@@ -55,6 +60,20 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
       setLoading(false);
     }
   }, [groups, showAuthModal]);
+
+  const applyBulkStatus = useCallback(
+    async (status: 'absent' | 'toDelete' | null) => {
+      const ids = Array.from(selectionModel.ids) as string[];
+      try {
+        await Promise.all(ids.map((id) => updateMemberStatus(id, status)));
+        setSelectionModel({ type: 'include', ids: new Set() });
+        await refresh();
+      } catch (e) {
+        if (e instanceof UnauthorizedError) showAuthModal(() => applyBulkStatus(status));
+      }
+    },
+    [selectionModel, refresh, showAuthModal]
+  );
 
   useEffect(() => {
     refresh();
@@ -222,6 +241,12 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
         />
       </Box>
 
+      <BulkActionsBar
+        count={selectionModel.ids.size}
+        onApply={applyBulkStatus}
+        onClear={() => setSelectionModel({ type: 'include', ids: new Set() })}
+      />
+
       <Box
         sx={{
           width: '100%',
@@ -248,6 +273,9 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
               columns={columns}
               loading={loading}
               disableRowSelectionOnClick
+              checkboxSelection
+              rowSelectionModel={selectionModel}
+              onRowSelectionModelChange={setSelectionModel}
               sortingOrder={['asc', 'desc']}
               initialState={{
                 sorting: {
