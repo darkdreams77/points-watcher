@@ -5,56 +5,67 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-# Frontend (Next.js)
-pnpm dev              # Start Next.js dev server
-pnpm build            # Build for production
-pnpm lint             # ESLint
+# Backend (Express API)
+pnpm dev:server       # Start the Express API server (PORT, default 4000)
+pnpm build            # Compile src/ to dist/ (tsc)
+
+# Frontend (Vite)
+pnpm dev:frontend     # cd frontend && pnpm dev
+cd frontend && pnpm build   # Production build
+cd frontend && pnpm lint    # ESLint
 
 # Scraper (ts-node)
-pnpm scrape:local     # Run scraper immediately (bypasses time check)
+pnpm scrape:local     # Run scraper immediately, untracked (bypasses time/ScrapeRun check)
 pnpm scrape:dry       # Dry run → scrape-dry-run.json, no DB writes
-pnpm scrape           # Production mode (only runs at midnight or Sunday 20h Paris time)
+pnpm scrape           # Production entrypoint (src/index.ts) — only actually scrapes once a
+                       # daily/weekly run is due for the current Paris date; see below
 
 # Database
-pnpm prisma:migrate   # Run pending migrations
+pnpm prisma:migrate   # Run pending migrations (prisma migrate dev)
 pnpm prisma:generate  # Regenerate Prisma client after schema changes
 
 # Debug / local
-pnpm test:cookies     # Test forum cookie auth
-pnpm backup:local     # Manually trigger member backup
+pnpm test:cookies     # Test forum cookie auth (src/tests/test-cookie.ts)
+pnpm test:backup      # Log MemberBackup row count (src/tests/test-backup.ts)
+pnpm backup:local     # Manually trigger a member backup snapshot
 ```
 
 ## Architecture
 
 ### Two separate apps, one repo
 
-**Scraper** (`src/`): Node.js/TypeScript scripts run via a Northflank cron Job, hourly. `src/index.ts` only actually scrapes once a "daily" (midnight Paris) or "weekly" (Sunday 20h Paris) run is due for the current Paris calendar date — tracked in the `ScrapeRun` table so a delayed/missed hourly tick is caught up on the next one instead of being silently skipped. Talks directly to Prisma/PostgreSQL.
+**Backend** (`src/`): Express API (`src/server.ts`) + scraper (`src/scraper.ts`, `src/forumApi.ts`) + cron entrypoint (`src/index.ts`), all TypeScript run via `ts-node`. Talks directly to Prisma/PostgreSQL through `src/db.ts`. Runs on Northflank: the API as a long-lived service, the scraper as an hourly cron Job.
 
-**Frontend**: Next.js 15 App Router (`app/`). Shared client-side code lives at the root: `api.ts`, `types.ts`, `components/`, `hooks/`, `helpers/`. The `app/page.tsx` mounts a full BrowserRouter (React Router) inside Next.js — routing is handled entirely by React Router, not Next.js file routing.
+**Frontend** (`frontend/`): a separate Vite + React + TypeScript SPA, routed client-side with React Router (not file-based routing — there's no `app/` or `pages/` directory). Deployed to Vercel as a static build (`frontend/vercel.json` has the SPA rewrite rule). Talks to the backend over plain `fetch` (`frontend/src/api.ts`), not through any server-side API routes.
 
-The old Vite frontend (`frontend/`) and the old Express server (`src/server.ts`) are being replaced by the Next.js app and its API routes (`app/api/`).
+Root and `frontend/` are two independent pnpm projects (separate `pnpm-workspace.yaml` + lockfile each), not a linked monorepo workspace.
 
-### API layer
+### API layer (`src/server.ts`)
 
-Next.js API routes (`app/api/`) call Prisma directly — they import from `../../src/db`. The old Express routes in `src/server.ts` are the reference implementation (same logic, same endpoints).
+Plain Express, no framework routing conventions to follow — every route is defined directly in this one file.
 
 Endpoints:
-- `GET /api/groups` — all groups
-- `GET /api/groups/[id]/members` — members of a group (by Prisma id, not forumId)
-- `GET /api/members` — all members with group info
-- `PATCH /api/members/[id]/status` — set `manualStatus` to `"absent"`, `"toDelete"`, or `null`
+- `GET /auth/status` — protected; confirms the `auth_token` cookie is valid
+- `POST /auth` — public; checks `password` against `AUTH_PASSWORD`, sets the `auth_token` cookie (value = `AUTH_SECRET`) on success
+- `GET /groups` — public (all reads are public; only mutations require auth)
+- `GET /groups/:id/members` — public, members of a group by Prisma `id` (not `forumId`)
+- `GET /members` — public, all members with joined group info (`groupName`, `groupForumId`)
+- `PATCH /members/:id/status` — protected; sets `manualStatus` to `"absent"`, `"toDelete"`, or `null`
+- `PATCH /members/:id/last-change-at` — protected; manually overrides `lastChangeAt`, normalized to UTC midnight of the given date (same convention the scraper uses)
+
+Auth is a single shared password → `AUTH_SECRET` value stored in an httpOnly, `Secure`, `SameSite=None` cookie (frontend and backend are on different domains). `requireAuth` middleware just compares the cookie to `AUTH_SECRET`.
 
 ### Database (Prisma + PostgreSQL)
 
 Four models: `Group`, `Member`, `MemberBackup`, `ScrapeRun`.
-
-`ScrapeRun` is keyed by `(kind, targetDate)` (`kind` = `"daily"` | `"weekly"`, `targetDate` = Paris calendar date) and tracks `status` (`"running"` | `"success"` | `"failed"`). `src/index.ts` uses it to decide whether a run is still due and to catch up on missed/delayed cron ticks.
 
 `Member.forumId` is a global unique key — a member belongs to exactly one group at a time but can be moved. When the scraper finds a member in a different group, it updates `groupId` in place (no duplicate).
 
 `lastChangeAt` is set to **UTC midnight of the UTC date** when `lastPoints` changes (not the actual timestamp). Used to detect members inactive for too long.
 
 `manualStatus` values: `"absent"` (exempted from alerts), `"toDelete"` (flagged for removal). `"toDelete"` is auto-cleared if the member's points change.
+
+`ScrapeRun` is keyed by `(kind, targetDate)` (`kind` = `"daily"` | `"weekly"`, `targetDate` = Paris calendar date) and tracks `status` (`"running"` | `"success"` | `"failed"`). `src/index.ts` uses it to decide whether a run is still due and to catch up on missed/delayed cron ticks.
 
 ### Scraper flow (`src/scraper.ts`)
 
@@ -66,23 +77,43 @@ Four models: `Group`, `Member`, `MemberBackup`, `ScrapeRun`.
 
 ### Forum API (`src/forumApi.ts`)
 
-Rate-limited to 1 request per 1.5s. Uses `FORUM_SESSION_COOKIE` env var for auth. Member RPs are scraped from profile pages via `.hidden_fields #field_id-13 field div`. `rateLimitedGet` retries up to 3 times (backoff) on both 5xx responses and network-level errors (timeout, connection reset).
+Rate-limited to 1 request per 1.5s. Uses `FORUM_SESSION_COOKIE` env var for auth. Member RPs are scraped from profile pages via `.hidden_fields #field_id-13 field div`; face claim via `#user_avatar .user_fc field div`. `rateLimitedGet` retries up to 3 times (backoff) on both 5xx responses and network-level errors (timeout, connection reset).
 
-### UI views
+### Frontend structure (`frontend/src/`)
 
-- `AllMembersPage` — all members across groups
-- `GroupPage` — members of a single group
-- `DangerPage` — members flagged as at risk (inactive)
-- `ToDeletePage` — members with `manualStatus = "toDelete"`
-- `Sidebar` — navigation between groups and special pages
+- `App.tsx` — routes: `/all-members`, `/groups/:forumId`, `/in-danger`, `/to-delete`, redirects `/` → `/all-members`
+- `auth-context.tsx` — auth state (login/logout, checks `/auth/status` on mount so login survives a refresh)
+- `theme-context.tsx` / `theme.ts` — light/dark MUI theme toggle
+- `components/AllMembersPage.tsx` — all members across groups
+- `components/GroupPage.tsx` — members of a single group
+- `components/DangerPage.tsx` — members flagged as at risk (inactive), with a bulk "copy list" action
+- `components/ToDeletePage.tsx` — members with `manualStatus = "toDelete"`, same bulk copy action
+- `components/Sidebar.tsx` — navigation between groups and the special pages above
+- `components/StatusMenu.tsx` / `StatusTag.tsx` / `GroupTag.tsx` — status/group badges, shared soft-tinted style (`helpers/badgeStyle.ts`), theme-aware (different tint direction in light vs dark)
+- `components/MemberCard.tsx` — mobile card layout (DataGrid is desktop-only, gated by `hooks/useIsMobile.tsx`)
+- `helpers/status.ts` — derives `ComputedStatus` (`actif`/`enDanger`/`absent`/`toDelete`) from `manualStatus` + `lastChangeAt` age
 
 ### Environment variables
 
 ```
 DATABASE_URL              # PostgreSQL connection string
 FORUM_BASE_URL            # Forum base URL (e.g. https://example.forumactif.com)
-FORUM_SESSION_COOKIE      # Session cookie for authenticated scraping (local dev)
-DISCORD_WEBHOOK_URL       # Discord webhook for scrape-failure alerts (optional — logs a warning and skips the alert if unset)
+FORUM_SESSION_COOKIE      # Session cookie for authenticated scraping (local dev only —
+                           # not needed where only public group pages are scraped)
+DISCORD_WEBHOOK_URL       # Discord webhook for scrape-failure alerts (optional — logs a
+                           # warning and skips the alert if unset)
+AUTH_PASSWORD             # Shared login password checked by POST /auth
+AUTH_SECRET               # Value stored in the auth_token cookie once logged in
+PORT                      # Backend API port (default 4000)
+FRONTEND_URL              # Allowed CORS origin for the deployed frontend (plus a regex
+                           # allowlist for Vercel preview URLs, hardcoded in server.ts)
+ENV                       # Set to "local" to force an untracked scrape (pnpm scrape:local)
 ```
 
-In the Northflank Job, `DATABASE_URL`, `FORUM_BASE_URL` and `DISCORD_WEBHOOK_URL` are set as Northflank secrets/env vars. The session cookie is not needed there (public group pages only).
+Frontend-side (`frontend/`, Vite):
+
+```
+VITE_API_BASE             # Backend API base URL (default http://localhost:4000)
+```
+
+In the Northflank Job/service, these are set as Northflank secrets/env vars — `FORUM_SESSION_COOKIE` isn't needed there since CI/prod scraping only touches public group pages.

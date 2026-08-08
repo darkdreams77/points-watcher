@@ -71,23 +71,36 @@ A full-stack application for monitoring forum group members and tracking their a
 - **Member**: Forum members with activity tracking
 
   - `id`, `forumId`, `username`, `profileUrl`, `groupId`
-  - `lastPoints`, `lastScanAt`, `lastChangeAt`
+  - `lastPoints`, `lastScanAt`, `lastChangeAt`, `faceClaim`
   - `manualStatus` (optional: "absent" or "toDelete")
 
 - **MemberBackup**: Historical backups of member data
+
   - Stores snapshots before updates
 
+- **ScrapeRun**: Tracks whether the daily/weekly scrape has already succeeded for a given Paris calendar date
+  - `kind` ("daily" | "weekly"), `targetDate`, `status` ("running" | "success" | "failed")
+  - Lets the hourly cron tick catch up a missed/delayed run instead of silently skipping it
+
 ## API Endpoints
+
+All `GET` routes are public. Mutations require a valid `auth_token` cookie (see Auth below).
+
+### Auth
+
+- `POST /auth` - Log in with `{ password }`, sets the `auth_token` cookie
+- `GET /auth/status` - Protected; confirms the current cookie is still valid
 
 ### Groups
 
 - `GET /groups` - List all groups
-- `GET /groups/:id/members` - Get members of a specific group
+- `GET /groups/:id/members` - Get members of a specific group (by Prisma `id`, not `forumId`)
 
 ### Members
 
 - `GET /members` - List all members with group information
-- `PATCH /members/:id/status` - Update member manual status
+- `PATCH /members/:id/status` - Protected; update `manualStatus` ("absent" | "toDelete" | null)
+- `PATCH /members/:id/last-change-at` - Protected; manually override `lastChangeAt`
 
 ## Setup
 
@@ -106,7 +119,13 @@ DATABASE_URL=postgresql://user:password@host:port/database
 FORUM_BASE_URL=https://your-forum-url.com
 FORUM_SESSION_COOKIE=your_session_cookie_here
 PORT=4000
+AUTH_PASSWORD=choose_a_login_password
+AUTH_SECRET=choose_a_random_secret
+FRONTEND_URL=http://localhost:5173
+DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/...   # optional, alerts are skipped if unset
 ```
+
+In `frontend/`, optionally set `VITE_API_BASE` (defaults to `http://localhost:4000`).
 
 ### Installation
 
