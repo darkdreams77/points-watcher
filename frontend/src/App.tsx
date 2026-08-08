@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { Routes, Route, Navigate, useParams } from 'react-router-dom';
-import { fetchGroups } from './api';
+import { fetchGroups, UnauthorizedError } from './api';
 import type { Group } from './types';
 import { GroupPage } from './components/GroupPage';
 import {
@@ -18,11 +18,13 @@ import { DangerPage } from './components/DangerPage';
 import { AllMembersPage } from './components/AllMembersPage';
 import { ToDeletePage } from './components/ToDeletePage';
 import { useIsMobile } from './hooks/useIsMobile';
-import { AuthProvider } from './auth-context';
+import { AuthProvider, useAuth } from './auth-context';
 
 const AppLayout: React.FC = () => {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
+  const [unauthorized, setUnauthorized] = useState(false);
+  const { showAuthModal } = useAuth();
 
   const isMobile = useIsMobile();
 
@@ -49,12 +51,29 @@ const AppLayout: React.FC = () => {
     },
   });
 
-  useEffect(() => {
+  const loadGroups = useCallback(() => {
+    setLoading(true);
     fetchGroups()
-      .then((data) => setGroups(data))
+      .then((data) => {
+        setGroups(data);
+        setUnauthorized(false);
+      })
+      .catch((e) => {
+        if (e instanceof UnauthorizedError) {
+          setUnauthorized(true);
+          showAuthModal(loadGroups);
+        }
+      })
       .finally(() => setLoading(false));
+  }, [showAuthModal]);
+
+  useEffect(() => {
+    loadGroups();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  if (unauthorized)
+    return <div style={{ padding: 16 }}>Authentification requise…</div>;
   if (loading)
     return <div style={{ padding: 16 }}>Chargement des groupes…</div>;
   if (!groups.length)

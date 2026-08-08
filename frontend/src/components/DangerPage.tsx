@@ -51,10 +51,12 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
       const dangerOnly = flat.filter((m) => computeStatus(m) === 'enDanger');
 
       setMembers(dangerOnly);
+    } catch (e) {
+      if (e instanceof UnauthorizedError) showAuthModal(refresh);
     } finally {
       setLoading(false);
     }
-  }, [groups]);
+  }, [groups, showAuthModal]);
 
   useEffect(() => {
     refresh();

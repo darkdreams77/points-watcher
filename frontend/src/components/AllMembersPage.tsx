@@ -28,8 +28,11 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
     setLoading(true);
     fetchAllMembers()
       .then(setMembers)
+      .catch((e) => {
+        if (e instanceof UnauthorizedError) showAuthModal(refreshMembers);
+      })
       .finally(() => setLoading(false));
-  }, []);
+  }, [showAuthModal]);
 
   // 2) Chargement initial + quand le groupe change
   useEffect(() => {
