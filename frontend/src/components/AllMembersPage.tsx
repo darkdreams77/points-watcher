@@ -13,22 +13,14 @@ import { getGroupColor } from '../helpers/groupColors';
 import { formatDateParis } from '../helpers/formatDate';
 import { computeStatus, type ComputedStatus } from '../helpers/status';
 import { getStatusColors } from '../theme';
-import { getContrastText } from '../helpers/contrastColor';
+import { getBadgeColors } from '../helpers/badgeStyle';
 import { StatusMenu } from './StatusMenu';
+import { StatusTag } from './StatusTag';
+import { GroupTag } from './GroupTag';
 import { BulkActionsBar } from './BulkActionsBar';
 import { EditDateAction } from './EditDateAction';
 import { MemberCard } from './MemberCard';
 import { useIsMobile } from '../hooks/useIsMobile';
-
-function statusLabel(status: ComputedStatus): string {
-  return status === 'actif'
-    ? 'Actif·ve'
-    : status === 'enDanger'
-      ? 'En danger'
-      : status === 'absent'
-        ? 'Absent·e'
-        : 'Inactif·ve';
-}
 
 interface Props {
   groups: Group[];
@@ -124,17 +116,7 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
           if (!group) return <span>-</span>;
           const color = getGroupColor(group);
 
-          return (
-            <Chip
-              label={group.name}
-              size="small"
-              sx={{
-                backgroundColor: color,
-                color: getContrastText(color),
-                height: 24,
-              }}
-            />
-          );
+          return <GroupTag name={group.name} color={color} />;
         },
       },
       {
@@ -150,22 +132,7 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
         sortable: false,
         renderCell: (params) => {
           const status = params.value as ComputedStatus;
-          const config = { label: statusLabel(status), bg: colors[status] };
-
-          return (
-            <span
-              style={{
-                backgroundColor: config.bg,
-                color: getContrastText(config.bg),
-                borderRadius: 999,
-                padding: '2px 8px',
-                fontSize: '0.75rem',
-                fontWeight: 500,
-              }}
-            >
-              {config.label}
-            </span>
-          );
+          return <StatusTag status={status} color={colors[status]} />;
         },
       },
       {
@@ -264,28 +231,16 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
         <Chip
           label={`${rows.length} membres`}
           size="small"
-          sx={{ backgroundColor: '#343434', color: '#fff' }}
+          sx={{
+            backgroundColor: getBadgeColors('#6B7280').bg,
+            border: `1px solid ${getBadgeColors('#6B7280').border}`,
+            color: getBadgeColors('#6B7280').text,
+          }}
         />
-        <Chip
-          label={`${stats.actifs} actif·ve·s`}
-          size="small"
-          sx={{ backgroundColor: colors.actif, color: getContrastText(colors.actif) }}
-        />
-        <Chip
-          label={`${stats.absents} absent·e·s`}
-          size="small"
-          sx={{ backgroundColor: colors.absent, color: getContrastText(colors.absent) }}
-        />
-        <Chip
-          label={`${stats.enDanger} en danger`}
-          size="small"
-          sx={{ backgroundColor: colors.enDanger, color: getContrastText(colors.enDanger) }}
-        />
-        <Chip
-          label={`${stats.inactifs} à supprimer`}
-          size="small"
-          sx={{ backgroundColor: colors.toDelete, color: getContrastText(colors.toDelete) }}
-        />
+        <StatusTag status="actif" color={colors.actif} label={`${stats.actifs} actif·ve·s`} />
+        <StatusTag status="absent" color={colors.absent} label={`${stats.absents} absent·e·s`} />
+        <StatusTag status="enDanger" color={colors.enDanger} label={`${stats.enDanger} en danger`} />
+        <StatusTag status="toDelete" color={colors.toDelete} label={`${stats.inactifs} à supprimer`} />
       </Box>
 
       {isAuthenticated && (
@@ -311,8 +266,8 @@ export const AllMembersPage: React.FC<Props> = ({ groups }) => {
                 groupColor={group ? getGroupColor(group) : undefined}
                 faceClaim={row.faceClaim}
                 lastPoints={row.lastPoints}
+                status={row.status}
                 statusColor={colors[row.status]}
-                statusLabel={statusLabel(row.status)}
                 lastChangeAtDisplay={row.lastChangeAt}
                 lastChangeAtRaw={row.lastChangeAtRaw}
                 manualStatus={row.manualStatus}

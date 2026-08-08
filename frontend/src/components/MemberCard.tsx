@@ -2,7 +2,9 @@ import React from 'react';
 import { Box, Checkbox, Typography } from '@mui/material';
 import { StatusMenu, type ManualStatus } from './StatusMenu';
 import { EditDateAction } from './EditDateAction';
-import { getContrastText } from '../helpers/contrastColor';
+import { StatusTag } from './StatusTag';
+import { GroupTag } from './GroupTag';
+import type { ComputedStatus } from '../helpers/status';
 
 interface Props {
   username: string;
@@ -12,8 +14,8 @@ interface Props {
   groupColor?: string;
   faceClaim?: string | null;
   lastPoints: number | null;
+  status: ComputedStatus;
   statusColor: string;
-  statusLabel: string;
   lastChangeAtDisplay: string;
   lastChangeAtRaw: string | null;
   lastScanAtDisplay?: string;
@@ -34,8 +36,8 @@ export const MemberCard: React.FC<Props> = ({
   groupColor,
   faceClaim,
   lastPoints,
+  status,
   statusColor,
-  statusLabel,
   lastChangeAtDisplay,
   lastChangeAtRaw,
   lastScanAtDisplay,
@@ -112,31 +114,9 @@ export const MemberCard: React.FC<Props> = ({
               mt: 0.5,
             }}
           >
-            <span
-              style={{
-                backgroundColor: statusColor,
-                color: getContrastText(statusColor),
-                borderRadius: 999,
-                padding: '1px 8px',
-                fontSize: '0.7rem',
-                fontWeight: 500,
-              }}
-            >
-              {statusLabel}
-            </span>
+            <StatusTag status={status} color={statusColor} />
             {groupName && groupColor && (
-              <span
-                style={{
-                  backgroundColor: groupColor,
-                  color: getContrastText(groupColor),
-                  borderRadius: 999,
-                  padding: '1px 8px',
-                  fontSize: '0.7rem',
-                  fontWeight: 500,
-                }}
-              >
-                {groupName}
-              </span>
+              <GroupTag name={groupName} color={groupColor} />
             )}
           </Box>
         </Box>

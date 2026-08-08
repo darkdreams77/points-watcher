@@ -21,18 +21,9 @@ import { EditDateAction } from './EditDateAction';
 import { MemberCard } from './MemberCard';
 import { formatDateParis, formatDateWithHours } from '../helpers/formatDate';
 import { getStatusColors } from '../theme';
-import { getContrastText } from '../helpers/contrastColor';
+import { getBadgeColors } from '../helpers/badgeStyle';
+import { StatusTag } from './StatusTag';
 import { useIsMobile } from '../hooks/useIsMobile';
-
-function statusLabel(status: ComputedStatus): string {
-  return status === 'actif'
-    ? 'Actif·ve'
-    : status === 'enDanger'
-      ? 'En danger'
-      : status === 'absent'
-        ? 'Absent·e'
-        : 'Inactif·ve';
-}
 
 interface Props {
   group: Group;
@@ -140,22 +131,7 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
         sortable: false,
         renderCell: (params) => {
           const status = params.value as ComputedStatus;
-          const config = { label: statusLabel(status), bg: colors[status] };
-
-          return (
-            <span
-              style={{
-                backgroundColor: config.bg,
-                color: getContrastText(config.bg),
-                borderRadius: 999,
-                padding: '2px 8px',
-                fontSize: '0.75rem',
-                fontWeight: 500,
-              }}
-            >
-              {config.label}
-            </span>
-          );
+          return <StatusTag status={status} color={colors[status]} />;
         },
       },
       {
@@ -243,25 +219,18 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
           label={`${members.length} membre${members.length > 1 ? 's' : ''}`}
           size="small"
           sx={{
-            backgroundColor: accentColor,
-            color: getContrastText(accentColor),
+            backgroundColor: getBadgeColors(accentColor).bg,
+            border: `1px solid ${getBadgeColors(accentColor).border}`,
+            color: getBadgeColors(accentColor).text,
           }}
         />
-        <Chip
-          label={`${stats.actifs} actif·s`}
-          size="small"
-          sx={{ backgroundColor: colors.actif, color: getContrastText(colors.actif) }}
-        />
-        <Chip
+        <StatusTag status="actif" color={colors.actif} label={`${stats.actifs} actif·s`} />
+        <StatusTag
+          status="absent"
+          color={colors.absent}
           label={`${stats.absents} absent·e${stats.absents > 1 ? 's' : ''}`}
-          size="small"
-          sx={{ backgroundColor: colors.absent, color: getContrastText(colors.absent) }}
         />
-        <Chip
-          label={`${stats.enDanger} en danger`}
-          size="small"
-          sx={{ backgroundColor: colors.enDanger, color: getContrastText(colors.enDanger) }}
-        />
+        <StatusTag status="enDanger" color={colors.enDanger} label={`${stats.enDanger} en danger`} />
       </Box>
 
       {isAuthenticated && (
@@ -283,8 +252,8 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
               usernameColor={accentColor}
               faceClaim={row.faceClaim}
               lastPoints={row.lastPoints}
+              status={row.status}
               statusColor={colors[row.status]}
-              statusLabel={statusLabel(row.status)}
               lastChangeAtDisplay={row.lastChangeAt}
               lastChangeAtRaw={row.lastChangeAtRaw}
               lastScanAtDisplay={row.lastScanAt}

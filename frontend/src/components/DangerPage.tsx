@@ -1,6 +1,6 @@
 // src/DangerPage.tsx
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Box, Chip, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import {
   DataGrid,
@@ -24,18 +24,9 @@ import { buildDangerCopyText } from '../helpers/dangerCopyText';
 import { MemberCard } from './MemberCard';
 import { formatDateParis, formatDateWithHours } from '../helpers/formatDate';
 import { getStatusColors } from '../theme';
-import { getContrastText } from '../helpers/contrastColor';
+import { StatusTag } from './StatusTag';
+import { GroupTag } from './GroupTag';
 import { useIsMobile } from '../hooks/useIsMobile';
-
-function statusLabel(status: ComputedStatus): string {
-  return status === 'actif'
-    ? 'Actif·ve'
-    : status === 'enDanger'
-      ? 'En danger'
-      : status === 'absent'
-        ? 'Absent·e'
-        : 'Inactif·ve';
-}
 
 interface MemberWithGroup extends Member {
   groupId: string;
@@ -165,17 +156,7 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
           if (!group) return <span>-</span>;
           const color = getGroupColor(group);
 
-          return (
-            <Chip
-              label={group.name}
-              size="small"
-              sx={{
-                backgroundColor: color,
-                color: getContrastText(color),
-                height: 24,
-              }}
-            />
-          );
+          return <GroupTag name={group.name} color={color} />;
         },
       },
       {
@@ -191,22 +172,7 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
         sortable: false,
         renderCell: (params) => {
           const status = params.value as ComputedStatus;
-          const config = { label: statusLabel(status), bg: colors[status] };
-
-          return (
-            <span
-              style={{
-                backgroundColor: config.bg,
-                color: getContrastText(config.bg),
-                borderRadius: 999,
-                padding: '2px 8px',
-                fontSize: '0.75rem',
-                fontWeight: 500,
-              }}
-            >
-              {config.label}
-            </span>
-          );
+          return <StatusTag status={status} color={colors[status]} />;
         },
       },
       {
@@ -282,10 +248,10 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
         <Typography variant="h5" sx={{ fontWeight: 700 }}>
           Membres en danger
         </Typography>
-        <Chip
+        <StatusTag
+          status="enDanger"
+          color={colors.enDanger}
           label={`${rows.length} membre${rows.length > 1 ? 's' : ''}`}
-          size="small"
-          sx={{ backgroundColor: colors.enDanger, color: getContrastText(colors.enDanger) }}
         />
         {rows.length > 0 && (
           <CopyDangerCodeAction
@@ -327,8 +293,8 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
                 groupColor={group ? getGroupColor(group) : undefined}
                 faceClaim={row.faceClaim}
                 lastPoints={row.lastPoints}
+                status={row.status}
                 statusColor={colors[row.status]}
-                statusLabel={statusLabel(row.status)}
                 lastChangeAtDisplay={row.lastChangeAt}
                 lastChangeAtRaw={row.lastChangeAtRaw}
                 manualStatus={row.manualStatus}
