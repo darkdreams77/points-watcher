@@ -97,7 +97,16 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
         renderCell: (params) => {
           const row = params.row as Member;
           return (
-            <Box sx={{ lineHeight: 1.2, py: 0.5 }}>
+            <Box
+              sx={{
+                lineHeight: 1.2,
+                py: 0.5,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+              }}
+            >
               <a
                 href={row.profileUrl}
                 target="_blank"
@@ -225,13 +234,21 @@ export const GroupPage: React.FC<Props> = ({ group }) => {
             color: groupBadge.text,
           }}
         />
-        <StatusTag status="actif" color={colors.actif} label={`${stats.actifs} actif·s`} />
+        <StatusTag
+          status="actif"
+          color={colors.actif}
+          label={`${stats.actifs} actif·s`}
+        />
         <StatusTag
           status="absent"
           color={colors.absent}
           label={`${stats.absents} absent·e${stats.absents > 1 ? 's' : ''}`}
         />
-        <StatusTag status="enDanger" color={colors.enDanger} label={`${stats.enDanger} en danger`} />
+        <StatusTag
+          status="enDanger"
+          color={colors.enDanger}
+          label={`${stats.enDanger} en danger`}
+        />
       </Box>
 
       {isAuthenticated && (
