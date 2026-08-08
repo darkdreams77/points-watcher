@@ -40,8 +40,8 @@ export const Sidebar = ({
   };
 
   const drawerContent = (
-    <Box sx={{ overflow: 'auto' }}>
-      <List>
+    <Box sx={{ overflow: 'auto', px: 1 }}>
+      <List sx={{ '& .MuiListItemButton-root': { borderRadius: 1 } }}>
         <ListItemButton
           onClick={() => handleNavClick(`../all-members`)}
           sx={{

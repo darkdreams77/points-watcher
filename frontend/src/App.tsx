@@ -56,14 +56,21 @@ const AppLayout: React.FC = () => {
           paddingLeft: { xs: '8px', sm: '30px' },
         }}
       >
-        <IconButton
-          color="inherit"
-          edge="start"
-          onClick={() => setIsDrawerOpen((prev) => !prev)}
-          sx={{ flex: { xs: '0 0 44px', sm: '0 0 70px' } }}
+        <Box
+          sx={{
+            flex: { xs: '0 0 44px', sm: '0 0 70px' },
+            display: 'flex',
+            alignItems: 'center',
+          }}
         >
-          <MenuIcon />
-        </IconButton>
+          <IconButton
+            color="inherit"
+            edge="start"
+            onClick={() => setIsDrawerOpen((prev) => !prev)}
+          >
+            <MenuIcon />
+          </IconButton>
+        </Box>
 
         <Toolbar sx={{ flexGrow: 1 }}>
           <Typography variant="h6" noWrap component="div">
