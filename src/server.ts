@@ -22,7 +22,10 @@ app.use(
         return callback(null, true);
       }
       if (VERCEL_PREVIEW_REGEX.test(origin)) return callback(null, true);
-      callback(new Error('Not allowed by CORS'));
+      // Deny without throwing: an Error here propagates to Express's default
+      // error handler, which renders an HTML page with the full server
+      // stack trace (file paths included) to whoever sent the request.
+      callback(null, false);
     },
     credentials: true,
   })
@@ -186,6 +189,21 @@ app.get('/members', async (_req, res) => {
 
   res.json(payload);
 });
+
+// Filet de sécurité générique : n'importe quelle erreur non catchée dans une
+// route tombe ici plutôt que dans la page HTML par défaut d'Express, qui
+// renvoie la stack trace (chemins serveur inclus) à l'appelant.
+app.use(
+  (
+    err: unknown,
+    _req: express.Request,
+    res: express.Response,
+    _next: express.NextFunction
+  ) => {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+);
 
 app.listen(PORT, () => {
   console.log(`API ILH Points watcher listening on port ${PORT}`);
