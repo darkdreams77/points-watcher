@@ -231,8 +231,15 @@ export async function syncAllGroups(): Promise<ScrapeResult> {
     };
   }
 
-  // --- Phase 2 : points de tous les membres connus (avec retry) ---
-  const allMembers = await db.member.findMany();
+  // --- Phase 2 : points de tous les membres encore présents (avec retry) ---
+  // On exclut les membres qu'aucun roster n'a vus ce run : ils sont sur le
+  // point d'être supprimés en fin de fonction, et tenter de scraper leur
+  // profil échouerait systématiquement (page partie avec eux) — ce qui
+  // ferait remonter un faux échec (alerte Discord + retry) pour un départ
+  // parfaitement normal plutôt qu'un vrai problème de scraping.
+  const allMembers = (await db.member.findMany()).filter((m) =>
+    seenForumIds.has(m.forumId)
+  );
   let pendingMemberIds = new Set(allMembers.map((m) => m.id));
 
   for (let round = 1; round <= MAX_ROUNDS && pendingMemberIds.size > 0; round++) {
