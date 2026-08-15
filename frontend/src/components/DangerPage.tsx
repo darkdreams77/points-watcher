@@ -22,7 +22,11 @@ import { EditDateAction } from './EditDateAction';
 import { CopyDangerCodeAction } from './CopyDangerCodeAction';
 import { buildDangerCopyText } from '../helpers/dangerCopyText';
 import { MemberCard } from './MemberCard';
-import { formatDateParis, formatDateWithHours } from '../helpers/formatDate';
+import {
+  formatDateParis,
+  formatDateWithHours,
+  formatDateNoYear,
+} from '../helpers/formatDate';
 import { getStatusColors } from '../theme';
 import { StatusTag } from './StatusTag';
 import { GroupTag } from './GroupTag';
@@ -281,7 +285,7 @@ export const DangerPage: React.FC<Props> = ({ groups }) => {
                   row.username,
                   row.faceClaim,
                   row.lastPoints,
-                  row.lastChangeAt
+                  formatDateNoYear(row.lastChangeAtRaw)
                 )
               )
               .join('\n')}

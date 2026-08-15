@@ -9,6 +9,15 @@ export function formatDateParis(value: string | null): string {
     .toFormat('dd LLLL yyyy'); // format lisible (ex: 30 novembre 2025)
 }
 
+export function formatDateNoYear(value: string | null): string {
+  if (!value) return '-';
+
+  return DateTime.fromISO(value)
+    .setZone('Europe/Paris')
+    .setLocale('fr')
+    .toFormat('dd LLLL');
+}
+
 export function formatDateWithHours(value: string | null): string {
   if (!value) return '-';
 
