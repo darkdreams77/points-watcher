@@ -1,7 +1,11 @@
 import type { Group, Member, MemberWithGroup } from './types';
 
-export const API_BASE =
-  import.meta.env.VITE_API_BASE ?? 'http://localhost:4000';
+// Toutes les requêtes passent par /api, proxifié vers le backend
+// (vite.config.ts en dev, vercel.json en prod) pour que le cookie
+// d'auth soit first-party — sinon Safari/Chrome iOS le bloquent
+// silencieusement (cookie cross-site) et redemandent le mot de passe
+// à chaque action.
+export const API_BASE = '/api';
 
 export class UnauthorizedError extends Error {
   constructor() {

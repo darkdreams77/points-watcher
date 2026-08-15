@@ -27,9 +27,8 @@ export const BulkActionsBar: React.FC<Props> = ({ count, onApply, onClear }) => 
   if (count === 0) return null;
 
   const confirmAbsence = () => {
-    if (!absenceDate) return;
     setAbsenceDialogOpen(false);
-    onApply('absent', absenceDate);
+    onApply('absent', absenceDate || undefined);
   };
 
   return (
@@ -86,7 +85,7 @@ export const BulkActionsBar: React.FC<Props> = ({ count, onApply, onClear }) => 
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle>Date de fin d'absence</DialogTitle>
+        <DialogTitle>Date de fin d'absence (optionnel)</DialogTitle>
         <DialogContent>
           <TextField
             type="date"
@@ -99,7 +98,7 @@ export const BulkActionsBar: React.FC<Props> = ({ count, onApply, onClear }) => 
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setAbsenceDialogOpen(false)}>Annuler</Button>
-          <Button variant="contained" disabled={!absenceDate} onClick={confirmAbsence}>
+          <Button variant="contained" onClick={confirmAbsence}>
             Confirmer
           </Button>
         </DialogActions>

@@ -63,9 +63,8 @@ export const StatusMenu: React.FC<Props> = ({ status, onChange }) => {
   };
 
   const confirmAbsence = () => {
-    if (!absenceDate) return;
     setAbsenceDialogOpen(false);
-    onChange('absent', absenceDate);
+    onChange('absent', absenceDate || undefined);
   };
 
   return (
@@ -93,7 +92,7 @@ export const StatusMenu: React.FC<Props> = ({ status, onChange }) => {
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle>Date de fin d'absence</DialogTitle>
+        <DialogTitle>Date de fin d'absence (optionnel)</DialogTitle>
         <DialogContent>
           <TextField
             type="date"
@@ -106,7 +105,7 @@ export const StatusMenu: React.FC<Props> = ({ status, onChange }) => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setAbsenceDialogOpen(false)}>Annuler</Button>
-          <Button variant="contained" disabled={!absenceDate} onClick={confirmAbsence}>
+          <Button variant="contained" onClick={confirmAbsence}>
             Confirmer
           </Button>
         </DialogActions>

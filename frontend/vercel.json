@@ -1,3 +1,9 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://site--watcher-service--9pyw68c668bn.code.run/:path*"
+    },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }

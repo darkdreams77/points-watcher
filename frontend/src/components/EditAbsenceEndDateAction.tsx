@@ -40,7 +40,6 @@ export const EditAbsenceEndDateAction: React.FC<Props> = ({
   };
 
   const save = async () => {
-    if (!date) return;
     setSaving(true);
     try {
       await updateMemberStatus(memberId, 'absent', date);
@@ -74,7 +73,7 @@ export const EditAbsenceEndDateAction: React.FC<Props> = ({
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpen(false)}>Annuler</Button>
-          <Button variant="contained" disabled={!date || saving} onClick={save}>
+          <Button variant="contained" disabled={saving} onClick={save}>
             Enregistrer
           </Button>
         </DialogActions>

@@ -60,12 +60,13 @@ app.post('/auth', (req, res) => {
     return res.status(401).json({ error: 'Mot de passe incorrect' });
   }
 
-  // SameSite=None requires Secure — frontend and backend are on different
-  // domains (Vercel / Northflank), so the cookie must always be Secure.
+  // The frontend proxies /api to this backend (vercel.json rewrite), so the
+  // browser only ever talks to its own origin — the cookie is first-party
+  // and can use SameSite=Lax. secure is disabled only for local http dev.
   res.cookie('auth_token', process.env.AUTH_SECRET, {
     httpOnly: true,
-    secure: true,
-    sameSite: 'none',
+    secure: process.env.ENV !== 'local',
+    sameSite: 'lax',
     maxAge: 1000 * 60 * 60 * 24 * 30,
     path: '/',
   });
@@ -146,9 +147,7 @@ app.patch('/members/:id/status', requireAuth, async (req, res) => {
     return res.status(400).json({ error: 'Status invalide' });
 
   let normalizedAbsenceEndDate: Date | null = null;
-  if (status === 'absent') {
-    if (!absenceEndDate)
-      return res.status(400).json({ error: 'Date de fin d’absence requise' });
+  if (status === 'absent' && absenceEndDate) {
     normalizedAbsenceEndDate = normalizeToUtcMidnight(absenceEndDate);
     if (!normalizedAbsenceEndDate)
       return res.status(400).json({ error: 'Date de fin d’absence invalide' });
