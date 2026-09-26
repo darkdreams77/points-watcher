@@ -15,6 +15,11 @@ const GROUP_COLORS_BY_FORUM_ID: Record<string, string> = {
   '388-i-want-it-i-got-it': '#588f30',
   '389-love-shot': '#ab2037',
   '391-wrecked-souls': '#008796',
+  '468-dream-chasers': '#8B5268',
+  '469-power-circle': '#A74848',
+  '470-city-spotlight': '#C25B82',
+  '471-good-souls': '#698D57',
+  '472-everyday-heroes': '#B06A3C',
 };
 
 const DEFAULT_COLOR = '#607D8B';

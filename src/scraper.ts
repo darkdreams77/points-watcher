@@ -67,6 +67,7 @@ async function syncGroupRoster(
 
     const existing = await db.member.findFirst({
       where: { forumId: fm.forumId },
+      include: { group: true },
     });
 
     if (!existing) {
@@ -94,7 +95,10 @@ async function syncGroupRoster(
       if (existing.profileUrl !== fm.profileUrl) {
         updates.profileUrl = fm.profileUrl;
       }
-      if (existing.groupId !== group.id) {
+      const staysInCurrentNonLegacyGroup =
+        group.isLegacy && existing.group && !existing.group.isLegacy;
+
+      if (existing.groupId !== group.id && !staysInCurrentNonLegacyGroup) {
         updates.groupId = group.id;
         console.log(
           `⇄ Changement de groupe pour ${existing.username} (u${existing.forumId}): ` +
