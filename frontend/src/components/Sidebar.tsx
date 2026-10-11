@@ -39,13 +39,6 @@ const GROUP_SECTIONS: string[][] = [
     '471-good-souls',
     '472-everyday-heroes',
   ],
-  [
-    '401-dark-rises',
-    '390-fire-starter',
-    '388-i-want-it-i-got-it',
-    '389-love-shot',
-    '391-wrecked-souls',
-  ],
 ];
 
 function sortGroupsIntoSections(groups: Group[]): Group[][] {

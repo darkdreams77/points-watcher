@@ -10,13 +10,11 @@ async function main() {
     { forumId: '432-kirkland-house', name: 'Kirkland House' },
     { forumId: '466-bizuts-kirkland-house', name: 'Bizuts Kirkland House' },
     { forumId: '4-pforzheimer-house', name: 'Pforzheimer House' },
-    { forumId: '467-bizuts-pforzheimer-house', name: 'Bizuts Pforzheimer House' },
+    {
+      forumId: '467-bizuts-pforzheimer-house',
+      name: 'Bizuts Pforzheimer House',
+    },
     { forumId: '7-students', name: 'Students' },
-    { forumId: '401-dark-rises', name: 'Dark Rises' },
-    { forumId: '390-fire-starter', name: 'Fire Starter' },
-    { forumId: '388-i-want-it-i-got-it', name: 'I want it, I got it' },
-    { forumId: '389-love-shot', name: 'Love Shot' },
-    { forumId: '391-wrecked-souls', name: 'Wrecked Souls' },
   ];
 
   for (const g of groups) {
